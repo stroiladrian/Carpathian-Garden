@@ -72,6 +72,25 @@ Nickname, character, sound setting, touch steering mode and best score are saved
 - **Add to Home Screen** (Safari Share menu / Chrome menu) to play fullscreen like an app. On Android the menu also has a Fullscreen button.
 - Rendering resolution drops automatically on devices that can't hold ~45 fps.
 
+## Difficulty
+
+Pick it in the menu: **Intern** (easy), **Candidate** (normal, default) or **Party Baron** (hard). Difficulty only changes the AI rivals; your own growth is never touched. All knobs live in `src/game/difficulty.ts`:
+
+| Knob | What it does | Intern | Candidate | Party Baron |
+| --- | --- | --- | --- | --- |
+| `aiGrowth` | How much AI gain from each item (1 = same as you) | 0.4 | 0.55 | 1 |
+| `aiSoftCap` | AI growth fades to 10% as they approach this power | 450 | 850 | 6000 |
+| `aiCapDrain` | Share of power above the cap AI lose per second | 4% | 2.5% | 0 |
+| `rubberBand` | AI much bigger than you grow slower; smaller ones a bit faster | on | on | off |
+| `aiStartScale` | Size of the opening field | 0.3× | 0.55× | 1× |
+| `aggression` | How often AI try to cut you off | 0.35× | 0.7× | 1× |
+| `thinkMin/Max` | AI reaction time in seconds | 0.17–0.26 | 0.11–0.18 | 0.08–0.14 |
+| `targetPlayerBias` | >1 means AI pick on you less | 1.6 | 1.1 | 0.8 |
+
+To make the game easier overall, lower `aiGrowth` and `aiSoftCap` for Candidate first. Those two change the feel the most.
+
+Progress milestones (titles from Local Councillor to Eternal Leader, the #1 celebration, and the crown over the leader) are in `RANKS` in the same file.
+
 ## Architecture
 
 ```

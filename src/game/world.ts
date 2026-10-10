@@ -230,7 +230,7 @@ export class World {
         break;
       }
       case 'tycoon':
-        this.emit('ring', h.x, h.y, 0, 0, 0.6, 320, '#ffd84d');
+        this.emit('ring', h.x, h.y, 0, 0, 0.6, 250, '#ffd84d');
         for (let i = 0; i < 18; i++) this.emit('coin', h.x, h.y, rand(-220, 220), rand(-220, 220), 0.9, 9, '#ffcf33');
         break;
       case 'baron':
@@ -408,7 +408,7 @@ export class World {
   private collectFood(w: Worm, dt: number): void {
     const h = w.head;
     const r = w.radius;
-    const magnet = w.arch.id === 'tycoon' && w.abilityT > 0 ? 330 : MAGNET_RANGE + r * 0.6;
+    const magnet = w.arch.id === 'tycoon' && w.abilityT > 0 ? 250 : MAGNET_RANGE + r * 0.6;
     const range = r + magnet + 16;
     this.foodGrid.query(h.x, h.y, range, (i) => {
       const f = this.gridFood[i];
@@ -435,7 +435,7 @@ export class World {
     if (id === 'tycoon' && (f.kind === 'coin' || f.kind === 'note' || f.kind === 'gold')) mult = 1.3;
     if (id === 'baron' && (f.kind === 'contract' || f.kind === 'briefcase')) mult = 1.5;
     if (id === 'reformer' && f.kind === 'pledge') mult = 3;
-    const gain = f.value * mult;
+    const gain = f.value * mult * w.growthMult;
     w.mass += gain;
     w.money += (f.kind === 'spill' ? f.value * 300 : def.lei) * mult;
     if (f.kind !== 'coin' && f.kind !== 'spill') w.eatT = 0.28;

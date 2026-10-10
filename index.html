@@ -42,6 +42,11 @@
               <button id="menu-sound" class="chip" type="button"></button>
             </div>
           </div>
+          <div class="diff-row">
+            <span>Difficulty</span>
+            <div class="seg" id="diff-seg" role="radiogroup" aria-label="Difficulty"></div>
+          </div>
+          <p class="diff-blurb" id="diff-blurb"></p>
           <div class="steer-row touch-only">
             <span>Touch steering</span>
             <div class="seg" role="radiogroup" aria-label="Touch steering">
@@ -76,7 +81,7 @@
     <!-- ───────────── HUD ───────────── -->
     <div id="hud" hidden>
       <div class="hud-stats panel-glass">
-        <div class="stat big"><span>Power</span><b id="h-score">0</b></div>
+        <div class="stat big"><span id="h-title">Local Councillor</span><b id="h-score">0</b></div>
         <div class="stat"><span>Lei</span><b id="h-lei">0</b></div>
         <div class="stat"><span>Rank</span><b id="h-rank">-</b></div>
         <div class="stat"><span>Length</span><b id="h-len">0</b></div>
@@ -135,6 +140,7 @@
         <canvas id="go-portrait" width="160" height="160"></canvas>
         <h2 id="go-title">Your campaign is over!</h2>
         <p id="go-cause" class="muted"></p>
+        <p class="go-office" id="go-office"></p>
         <div class="go-stats">
           <div><span>Final power</span><b id="go-score">0</b></div>
           <div><span>Peak power</span><b id="go-peak">0</b></div>

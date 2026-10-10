@@ -12,6 +12,7 @@ import { loadSave, writeSave } from './storage';
 import { $, formatLei, formatTime } from './ui/dom';
 import { Hud } from './ui/hud';
 import { Menu } from './ui/menu';
+import { DIFFICULTIES, DIFFICULTY_LIST, DifficultyId, titleFor } from './game/difficulty';
 
 type State = 'menu' | 'playing' | 'paused' | 'gameover';
 
@@ -45,6 +46,8 @@ export class App {
   private perfWindow = 0;
   private perfFrames = 0;
   private slowStreak = 0;
+  private lastTitle = '';
+  private reachedTop = false;
 
   constructor() {
     const canvas = $('game') as HTMLCanvasElement;
@@ -130,6 +133,29 @@ export class App {
       $('steer-joystick').setAttribute('aria-checked', String(m === 'joystick'));
       $('steer-follow').setAttribute('aria-checked', String(m === 'follow'));
     };
+    // difficulty
+    const seg = $('diff-seg');
+    const setDiff = (id: DifficultyId) => {
+      this.save.difficulty = id;
+      writeSave({ difficulty: id });
+      for (const b of Array.from(seg.children)) b.setAttribute('aria-checked', String((b as HTMLElement).dataset.id === id));
+      $('diff-blurb').textContent = DIFFICULTIES[id].blurb;
+    };
+    for (const d of DIFFICULTY_LIST) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('role', 'radio');
+      b.dataset.id = d.id;
+      b.textContent = d.label;
+      b.addEventListener('click', () => {
+        this.sfx.unlock();
+        this.sfx.click();
+        setDiff(d.id);
+      });
+      seg.append(b);
+    }
+    setDiff(this.save.difficulty in DIFFICULTIES ? this.save.difficulty : 'normal');
+
     $('steer-joystick').addEventListener('click', () => setSteer('joystick'));
     $('steer-follow').addEventListener('click', () => setSteer('follow'));
     setSteer(this.save.touchSteer);
@@ -167,7 +193,9 @@ export class App {
     const arch = ARCHETYPES[this.menu.selected];
     const name = this.menu.nickname || 'Domnul Candidat';
     writeSave({ nickname: this.menu.nickname, character: arch.id });
-    this.session = new Session({ aiCount: AI_COUNT, player: { name, arch } });
+    this.session = new Session({ aiCount: AI_COUNT, player: { name, arch }, difficulty: DIFFICULTIES[this.save.difficulty] ?? DIFFICULTIES.normal });
+    this.lastTitle = titleFor(0);
+    this.reachedTop = false;
     if (this.isTouch) this.session.world.effectsScale = 0.75;
     const p = this.session.player!;
     this.cam = { x: p.head.x, y: p.head.y, zoom: this.renderer.zoomFor(p.radius) };
@@ -249,6 +277,7 @@ export class App {
     $('go-kills').textContent = String(p.kills);
     $('go-lei').textContent = formatLei(p.money);
     $('go-time').textContent = formatTime(this.runTime);
+    $('go-office').textContent = `Highest office: ${titleFor(p.peakMass)}${this.reachedTop ? ' · reached #1' : ''}`;
     $('go-best').textContent = isBest ? '★ New personal best! ★' : `Best score: ${this.save.best.toLocaleString('en-US')}`;
     renderPortrait($('go-portrait') as HTMLCanvasElement, p.arch, 'dead', 0);
   }
@@ -305,10 +334,34 @@ export class App {
       const rank = s.rankOf(s.player);
       if (s.player.alive) this.bestRank = Math.min(this.bestRank, rank);
       this.hud.update(s.player, rank, s.world.worms.length, s.world.leaderboard());
+      if (s.player.alive && this.state === 'playing') this.checkMilestones(s.player, rank);
     }
     if (this.state === 'menu') this.menu.animate(this.realTime);
     if (!$('touch-hint').hidden && (this.realTime >= this.hintHideAt || this.state !== 'playing')) $('touch-hint').hidden = true;
     this.hud.drawJoystick(this.state === 'playing' ? this.input.joy : null, this.input.joystickRadius, this.input.boostingByTouch);
+  }
+
+  /** Promotions and reaching #1: the small moments that make a run feel like winning. */
+  private checkMilestones(p: Worm, rank: number): void {
+    const title = titleFor(p.peakMass);
+    if (title !== this.lastTitle) {
+      this.lastTitle = title;
+      this.hud.toast(`Promoted: ${title}!`, 'good');
+      this.sfx.pickup('briefcase');
+      buzz(30);
+    }
+    if (rank === 1 && !this.reachedTop && this.runTime > 3) {
+      this.reachedTop = true;
+      this.hud.toast('You are #1! The whole country is yours.', 'good');
+      this.sfx.kill();
+      buzz([40, 40, 80]);
+      const h = p.head;
+      for (let i = 0; i < 40; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const v = 120 + Math.random() * 260;
+        this.session.world.emit('confetti', h.x, h.y, Math.cos(a) * v, Math.sin(a) * v, 1.4, 9, ['#002b7f', '#fcd116', '#ce1126'][i % 3]);
+      }
+    }
   }
 
   /** Drops render resolution on devices that can't hold ~45 fps. */

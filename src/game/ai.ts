@@ -2,6 +2,7 @@ import { WORLD_RADIUS } from './config';
 import { angleDiff, rand } from './math';
 import type { ControlInput, Worm } from './worm';
 import type { World } from './world';
+import type { Difficulty } from './difficulty';
 
 /**
  * Simple but lively rival politician. Re-plans ~8 times per second:
@@ -18,10 +19,13 @@ export class AIBrain {
   private huntUntil = 0;
   private out: ControlInput = { angle: null, boost: false, ability: false };
 
-  constructor(worm: Worm) {
+  private diff: Difficulty;
+
+  constructor(worm: Worm, diff: Difficulty) {
     this.worm = worm;
+    this.diff = diff;
     this.wander = worm.angle;
-    this.aggression = rand(0.15, 0.75);
+    this.aggression = rand(0.15, 0.75) * diff.aggression;
     this.greed = rand(0.3, 1);
   }
 
@@ -31,7 +35,7 @@ export class AIBrain {
       this.out.ability = false;
       return this.out;
     }
-    this.nextThink = world.time + rand(0.08, 0.14);
+    this.nextThink = world.time + rand(this.diff.thinkMin, this.diff.thinkMax);
 
     const h = w.head;
     const r = w.radius;
@@ -77,7 +81,7 @@ export class AIBrain {
         let bestD = 520;
         for (const o of world.worms) {
           if (o === w || !o.alive || o.mass > w.mass * 1.6) continue;
-          const d = Math.hypot(o.head.x - h.x, o.head.y - h.y) * (o.isPlayer ? 0.8 : 1);
+          const d = Math.hypot(o.head.x - h.x, o.head.y - h.y) * (o.isPlayer ? this.diff.targetPlayerBias : 1);
           if (d < bestD) {
             bestD = d;
             target = o;

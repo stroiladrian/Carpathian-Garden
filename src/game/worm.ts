@@ -44,6 +44,8 @@ export class Worm {
   /** Index into world.worms for the current tick (grid bookkeeping). */
   gi = 0;
   killedBy: string | null = null;
+  /** Scales food gains (AI difficulty / rubber-banding). The player stays at 1. */
+  growthMult = 1;
   deathCause: 'body' | 'border' | null = null;
 
   control: ControlInput = { angle: null, boost: false, ability: false };

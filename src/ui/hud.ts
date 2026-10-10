@@ -2,11 +2,13 @@ import type { Archetype } from '../game/characters';
 import { MIN_BOOST_MASS } from '../game/config';
 import type { Worm } from '../game/worm';
 import { renderPortrait } from '../render/heads';
+import { titleFor } from '../game/difficulty';
 import { $, el, formatLei, soundIcon } from './dom';
 
 export class Hud {
   readonly root = $('hud');
   private score = $('h-score');
+  private title = $('h-title');
   private lei = $('h-lei');
   private rank = $('h-rank');
   private len = $('h-len');
@@ -66,6 +68,8 @@ export class Hud {
 
   update(p: Worm, rank: number, total: number, board: Worm[]): void {
     this.score.textContent = Math.floor(p.mass).toLocaleString('en-US');
+    const t = titleFor(p.peakMass);
+    if (this.title.textContent !== t) this.title.textContent = t;
     this.lei.textContent = formatLei(p.money);
     this.rank.textContent = `#${rank}/${total}`;
     this.len.textContent = `${p.segs.length}`;

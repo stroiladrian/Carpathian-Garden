@@ -22,6 +22,7 @@ export class Renderer {
   h = 0;
   dpr = 1;
   maxDpr = 2;
+  private leaderId = -1;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -73,6 +74,9 @@ export class Renderer {
     this.drawFood(world, vx0, vy0, vx1, vy1, t);
 
     const sorted = [...world.worms].sort((a, b) => (a === focus ? 1 : b === focus ? -1 : a.mass - b.mass));
+    let leader: Worm | null = null;
+    for (const wm of world.worms) if (!leader || wm.mass > leader.mass) leader = wm;
+    this.leaderId = leader ? leader.id : -1;
     for (const wm of sorted) this.drawWorm(wm, alpha, t, z, vx0, vy0, vx1, vy1, wm === focus);
 
     this.drawParticles(world.particles, z);
@@ -215,6 +219,7 @@ export class Renderer {
       ctx.strokeText(w.name, hx, ty);
       ctx.fillStyle = isFocus ? '#ffe14d' : '#fffaf0';
       ctx.fillText(w.name, hx, ty);
+      if (w.id === this.leaderId) drawCrown(ctx, hx, ty - fs * 1.35, fs * 1.1, t);
     }
     ctx.globalAlpha = 1;
   }
@@ -251,7 +256,7 @@ export class Renderer {
         ctx.lineWidth = 6;
         ctx.setLineDash([24, 18]);
         ctx.beginPath();
-        ctx.arc(0, 0, 330, 0, Math.PI * 2);
+        ctx.arc(0, 0, 250, 0, Math.PI * 2);
         ctx.stroke();
         ctx.setLineDash([]);
         ctx.fillStyle = 'rgba(255,216,77,0.08)';
@@ -261,7 +266,7 @@ export class Renderer {
         ctx.textAlign = 'center';
         for (let k = 0; k < 6; k++) {
           const a = (k / 6) * Math.PI * 2;
-          ctx.fillText('$', Math.cos(a) * 330, Math.sin(a) * 330);
+          ctx.fillText('$', Math.cos(a) * 250, Math.sin(a) * 250);
         }
         ctx.restore();
         break;
@@ -448,4 +453,29 @@ export class Minimap {
       c.stroke();
     });
   }
+}
+
+function drawCrown(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, t: number): void {
+  const bob = Math.sin(t * 3) * s * 0.08;
+  ctx.save();
+  ctx.translate(x, y + bob);
+  ctx.fillStyle = '#ffd23f';
+  ctx.strokeStyle = '#8a5a00';
+  ctx.lineWidth = s * 0.08;
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.6, s * 0.35);
+  ctx.lineTo(-s * 0.7, -s * 0.3);
+  ctx.lineTo(-s * 0.3, s * 0.02);
+  ctx.lineTo(0, -s * 0.45);
+  ctx.lineTo(s * 0.3, s * 0.02);
+  ctx.lineTo(s * 0.7, -s * 0.3);
+  ctx.lineTo(s * 0.6, s * 0.35);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = '#ce1126';
+  ctx.beginPath();
+  ctx.arc(0, s * 0.15, s * 0.1, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }

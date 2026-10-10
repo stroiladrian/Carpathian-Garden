@@ -364,3 +364,8 @@ html.touch .action.ability .cd b { left: 50%; }
   .go-card .btn-col { flex-direction: row; margin-top: 10px; }
   .go-card .btn-col .btn { flex: 1; font-size: 18px; padding: 10px; }
 }
+.diff-row { margin-top: 12px; font-weight: 800; color: var(--muted); font-size: 13px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.diff-blurb { margin: 6px 0 0; font-size: 13px; color: var(--muted); text-align: right; }
+.go-office { font-family: var(--display); color: var(--cream); margin: -8px 0 14px; font-size: 18px; }
+.stat.big span#h-title { color: var(--gold-2); max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-height: 520px) { .go-office { margin: 0 0 6px; font-size: 15px; } }
