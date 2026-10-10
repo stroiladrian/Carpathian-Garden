@@ -69,7 +69,7 @@ export class Renderer {
     const vy1 = cam.y + h / 2 / z;
     const t = world.time;
 
-    this.terrain.draw(ctx, vx0, vy0, vx1, vy1, 3);
+    this.terrain.draw(ctx, vx0, vy0, vx1, vy1, 1);
     this.drawBorder(ctx, vx0, vy0, vx1, vy1, focus, t);
     this.drawFood(world, vx0, vy0, vx1, vy1, t);
 

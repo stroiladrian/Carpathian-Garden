@@ -60,6 +60,8 @@ export class MenuMusic {
   private phase: 'intro' | 'fast' = 'intro';
   private noise: AudioBuffer;
   playing = false;
+  /** Notes waiting to be created; nodes are only built ~0.5 s before they sound. */
+  private queue: { t: number; run: () => void }[] = [];
 
   constructor(ctx: AudioContext, destination: AudioNode, noise: AudioBuffer) {
     this.ctx = ctx;
@@ -85,7 +87,8 @@ export class MenuMusic {
     this.out.gain.cancelScheduledValues(now);
     this.out.gain.setValueAtTime(this.out.gain.value, now);
     this.out.gain.linearRampToValueAtTime(0.7, now + 0.8);
-    this.nextTime = now + 0.08;
+    this.queue = [];
+    this.nextTime = now + 0.1;
     this.phase = 'intro';
     this.bar = 0;
     this.loop = 0;
@@ -97,6 +100,7 @@ export class MenuMusic {
   stop(fade = 0.8): void {
     if (!this.playing) return;
     this.playing = false;
+    this.queue = [];
     const now = this.ctx.currentTime;
     this.out.gain.cancelScheduledValues(now);
     this.out.gain.setValueAtTime(this.out.gain.value, now);
@@ -110,6 +114,7 @@ export class MenuMusic {
 
   private schedule(): void {
     if (!this.playing) return;
+    this.flush();
     while (this.nextTime < this.ctx.currentTime + 0.4) {
       if (this.phase === 'intro') {
         this.nextTime += this.playIntro(this.nextTime);
@@ -206,9 +211,37 @@ export class MenuMusic {
     return six * 8;
   }
 
+  // ───────────── deferred voices ─────────────
+  private at(t: number, run: () => void): void {
+    if (t < this.ctx.currentTime + 0.5) run();
+    else this.queue.push({ t, run });
+  }
+  private flush(): void {
+    if (!this.queue.length) return;
+    const limit = this.ctx.currentTime + 0.5;
+    const keep: { t: number; run: () => void }[] = [];
+    for (const e of this.queue) (e.t < limit ? e.run() : keep.push(e));
+    this.queue = keep;
+  }
+  private lead(m: number, t: number, dur: number, o: LeadOpts = {}): void {
+    this.at(t, () => this.raw_lead(m, t, dur, o));
+  }
+  private bass(m: number, t: number, dur: number): void {
+    this.at(t, () => this.raw_bass(m, t, dur));
+  }
+  private tambal(notes: number[], t: number, decay: number, vol: number): void {
+    this.at(t, () => this.raw_tambal(notes, t, decay, vol));
+  }
+  private drum(t: number, vol: number): void {
+    this.at(t, () => this.raw_drum(t, vol));
+  }
+  private tick(t: number, vol = 1): void {
+    this.at(t, () => this.raw_tick(t, vol));
+  }
+
   // ───────────── voices ─────────────
 
-  private lead(m: number, t: number, dur: number, o: LeadOpts = {}): void {
+  private raw_lead(m: number, t: number, dur: number, o: LeadOpts = {}): void {
     const ctx = this.ctx;
     const vol = o.vol ?? 1;
     const f = hz(m);
@@ -277,7 +310,7 @@ export class MenuMusic {
     n.stop(t + 0.08);
   }
 
-  private bass(m: number, t: number, dur: number): void {
+  private raw_bass(m: number, t: number, dur: number): void {
     const ctx = this.ctx;
     const o = ctx.createOscillator();
     o.type = 'square';
@@ -295,7 +328,7 @@ export class MenuMusic {
     o.stop(t + dur);
   }
 
-  private tambal(notes: number[], t: number, decay: number, vol: number): void {
+  private raw_tambal(notes: number[], t: number, decay: number, vol: number): void {
     const ctx = this.ctx;
     notes.forEach((m, k) => {
       const tt = t + k * 0.007;
@@ -318,7 +351,7 @@ export class MenuMusic {
     });
   }
 
-  private drum(t: number, vol: number): void {
+  private raw_drum(t: number, vol: number): void {
     const ctx = this.ctx;
     const o = ctx.createOscillator();
     o.type = 'sine';
@@ -333,7 +366,7 @@ export class MenuMusic {
     o.stop(t + 0.22);
   }
 
-  private tick(t: number, vol = 1): void {
+  private raw_tick(t: number, vol = 1): void {
     const ctx = this.ctx;
     const n = ctx.createBufferSource();
     n.buffer = this.noise;

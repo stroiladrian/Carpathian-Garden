@@ -102,9 +102,27 @@ export class Sfx {
     this.syncMusic();
   }
 
+  private waitingForRun = false;
+
   private syncMusic(): void {
     if (!this.ctx || !this.master || !this.noiseBuf) return;
     const on = this.wantMusic && this.musicEnabled && !this.muted && !document.hidden;
+    if (on && this.ctx.state !== 'running') {
+      // the browser hasn't actually started audio yet: start the tune the moment it does
+      if (!this.waitingForRun) {
+        this.waitingForRun = true;
+        const ctx = this.ctx;
+        const onState = () => {
+          if (ctx.state === 'running') {
+            ctx.removeEventListener('statechange', onState);
+            this.waitingForRun = false;
+            this.syncMusic();
+          }
+        };
+        ctx.addEventListener('statechange', onState);
+      }
+      return;
+    }
     if (on) {
       if (!this.music) this.music = new MenuMusic(this.ctx, this.master, this.noiseBuf);
       this.music.start();

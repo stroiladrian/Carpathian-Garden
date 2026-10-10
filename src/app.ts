@@ -99,7 +99,8 @@ export class App {
     document.addEventListener('visibilitychange', () => (document.hidden ? this.sfx.sleep() : this.sfx.wake()));
     window.addEventListener('pageshow', () => this.sfx.wake());
 
-    this.renderer.terrain.warm(0, 0, 1200);
+    this.renderer.terrain.warm(0, 0, 500);
+    this.renderer.terrain.warmInBackground(0, 0);
     requestAnimationFrame((t) => {
       this.last = t;
       requestAnimationFrame(this.frame);
@@ -222,7 +223,8 @@ export class App {
     if (this.isTouch) this.session.world.effectsScale = 0.75;
     const p = this.session.player!;
     this.cam = { x: p.head.x, y: p.head.y, zoom: this.renderer.zoomFor(p.radius) };
-    this.renderer.terrain.warm(p.head.x, p.head.y, 1100);
+    this.renderer.terrain.warm(p.head.x, p.head.y, 600);
+    this.renderer.terrain.warmInBackground(p.head.x, p.head.y);
     this.acc = 0;
     this.runTime = 0;
     this.bestRank = 99;

@@ -73,7 +73,9 @@ export class Terrain {
   private items: Item[] = [];
   private buckets: Item[][] = [];
   private cache = new Map<number, HTMLCanvasElement>();
-  private maxCache = 72;
+  private maxCache = N * N + 8; // the whole map fits (~60 MB) so it's rendered only once
+  private idleQueue: number[] = [];
+  private idleRunning = false;
 
   constructor() {
     this.generate();
@@ -406,6 +408,45 @@ export class Terrain {
         }
       }
     }
+  }
+
+  /**
+   * Pre-renders the map in the background (idle time), nearest chunks to (cx, cy)
+   * first, a few milliseconds at a time so it never causes a hitch.
+   */
+  warmInBackground(cx: number, cy: number): void {
+    const keys: { k: number; d: number }[] = [];
+    for (let j = 0; j < N; j++) {
+      for (let i = 0; i < N; i++) {
+        const k = j * N + i;
+        if (this.cache.has(k)) continue;
+        const x = -WORLD_HALF + (i + 0.5) * CHUNK;
+        const y = -WORLD_HALF + (j + 0.5) * CHUNK;
+        if (Math.hypot(x, y) > WORLD_RADIUS + CHUNK) continue; // fully outside the arena
+        keys.push({ k, d: Math.hypot(x - cx, y - cy) });
+      }
+    }
+    keys.sort((a, b) => a.d - b.d);
+    this.idleQueue = keys.map((e) => e.k);
+    if (this.idleRunning) return;
+    this.idleRunning = true;
+    type IdleDeadline = { timeRemaining(): number };
+    const ric = (window as unknown as { requestIdleCallback?: (cb: (d: IdleDeadline) => void, o?: { timeout: number }) => number }).requestIdleCallback;
+    const step = (deadline?: IdleDeadline) => {
+      const start = performance.now();
+      const budget = () => (deadline ? deadline.timeRemaining() > 3 : performance.now() - start < 6);
+      while (this.idleQueue.length && budget()) {
+        const k = this.idleQueue.shift()!;
+        if (!this.cache.has(k)) this.cache.set(k, this.renderChunk(k % N, Math.floor(k / N)));
+        if (!deadline) break;
+      }
+      if (this.idleQueue.length) {
+        if (ric) ric(step, { timeout: 200 });
+        else window.setTimeout(() => step(), 30);
+      } else this.idleRunning = false;
+    };
+    if (ric) ric(step, { timeout: 200 });
+    else window.setTimeout(() => step(), 30);
   }
 
   warm(cx: number, cy: number, radius: number): void {
