@@ -406,3 +406,8 @@ html.touch .power .p-abbr { font-size: 14px; }
   html.touch .powers { right: 172px; bottom: 0; flex-direction: row-reverse; }
 }
 .chip { display: inline-flex; align-items: center; gap: 6px; }
+/* big JOACĂ bar pinned to the bottom of the menu on every device */
+.sticky-play { display: flex; justify-content: center; }
+html.touch .sticky-play:not([hidden]) { display: flex !important; }
+.sticky-play .btn { width: min(560px, 100%); }
+.play-panel .play-row .btn { display: none; }
