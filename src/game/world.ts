@@ -17,11 +17,24 @@ import type { Archetype, BodyColors } from './characters';
 import type { FloatText, GameEvent, Particle, ParticleKind } from './effects';
 import { Food, FOOD_DEFS, FoodKind, rollNaturalFood } from './food';
 import { Grid } from './grid';
-import { angleDiff, clamp, rand, randomPointInCircle, TAU } from './math';
+import { angleDiff, clamp, pick, rand, randomPointInCircle, TAU } from './math';
+import { BUCHAREST, VILLAGES } from './layout';
 import { Worm } from './worm';
 
 const MAX_PARTICLES = 900;
 const MAX_SEG_RADIUS = 42;
+const HEAT_PER_BRIBE = 22;
+const HEAT_DECAY = 2.2; // per second
+const SPECIAL_TTL = 30;
+const SPECIAL_CONTRACTS: [string, number][] = [
+  ['No-Bid Motorway Contract', 70],
+  ['EU Funds Package', 55],
+  ['Stadium Renovation Deal', 60],
+  ['Ministry “Consultancy”', 45],
+  ['Roundabout of the Decade', 50],
+  ['Hospital That Never Opens', 65],
+  ['Sidewalk Repaving (Again)', 40],
+];
 
 /**
  * Pure simulation of the arena. It knows nothing about input devices or
@@ -38,6 +51,10 @@ export class World {
   /** Worm whose pickups get floating text (the local player). */
   focusId = -1;
   effectsScale = 1;
+
+  /** The currently active special contract, if any. */
+  special: Food | null = null;
+  private nextSpecialAt = 20;
 
   private nextId = 1;
   private naturalCount = 0;
@@ -113,6 +130,7 @@ export class World {
     for (const w of ws) if (w.alive) this.collectFood(w, dt);
 
     this.spawnNaturalFood();
+    this.updateSpecial();
     this.updateEffects(dt);
 
     // compact
@@ -128,6 +146,7 @@ export class World {
     w.stunT = Math.max(0, w.stunT - dt);
     w.spawnShield = Math.max(0, w.spawnShield - dt);
     w.eatT = Math.max(0, w.eatT - dt);
+    w.heat = Math.max(0, w.heat - HEAT_DECAY * dt);
 
     if (w.control.ability && w.abilityCd <= 0) this.activateAbility(w);
 
@@ -401,6 +420,11 @@ export class World {
         }
       }
       if (f.kind === 'spill' && t - f.born > SPILL_LIFETIME) f.alive = false;
+      if (f.kind === 'tender' && f.alive && t > f.expires) {
+        f.alive = false;
+        if (this.special === f) this.special = null;
+        this.events.push({ t: 'specialExpired', label: f.label });
+      }
     }
     this.rebuildFoodGrid();
   }
@@ -440,6 +464,18 @@ export class World {
     w.money += (f.kind === 'spill' ? f.value * 300 : def.lei) * mult;
     if (f.kind !== 'coin' && f.kind !== 'spill') w.eatT = 0.28;
     this.events.push({ t: 'eat', w: w.id, kind: f.kind, value: gain });
+    if (f.kind === 'envelope') {
+      const before = w.heat;
+      w.heat += HEAT_PER_BRIBE * (id === 'baron' ? 0.7 : 1);
+      if (before < 70 && w.heat >= 70 && w.heat < 100) this.events.push({ t: 'heatWarning', w: w.id });
+      if (w.heat >= 100) this.investigate(w);
+    }
+    if (f.kind === 'tender') {
+      if (this.special === f) this.special = null;
+      this.events.push({ t: 'specialTaken', w: w.id, name: w.name, label: f.label });
+      this.emit('ring', f.x, f.y, 0, 0, 0.8, 260, '#ffd84d');
+      for (let i = 0; i < 30; i++) this.emit(i % 2 ? 'coin' : 'paper', f.x, f.y, rand(-260, 260), rand(-260, 260), rand(0.8, 1.4), 10, i % 2 ? '#ffcf33' : '#fffaf0');
+    }
 
     const sparks = f.kind === 'coin' || f.kind === 'spill' ? 2 : 6;
     for (let i = 0; i < sparks * this.effectsScale; i++) {
@@ -453,11 +489,50 @@ export class World {
     } else if (f.kind === 'gold') {
       this.emit('star', f.x, f.y, 0, -20, 0.5, 10, '#fff2a8');
     }
-    if (w.id === this.focusId && (f.kind === 'contract' || f.kind === 'briefcase' || f.kind === 'gold' || f.kind === 'pledge')) {
-      const label = def.label;
+    if (w.id === this.focusId && (f.kind === 'contract' || f.kind === 'briefcase' || f.kind === 'gold' || f.kind === 'pledge' || f.kind === 'envelope' || f.kind === 'tender')) {
+      const label = f.kind === 'tender' ? f.label : f.kind === 'envelope' ? 'Bribe (heat ↑)' : def.label;
       const v = Math.round(gain * 10) / 10;
       this.text(f.x, f.y - 20, `+${v} ${label}`, f.kind === 'pledge' ? '#9fd0ff' : '#ffe14d', 1.2, f.kind === 'briefcase' ? 22 : 18);
     }
+  }
+
+  /** The Anti-Bribe Directorate confiscates a third of your power and slows you down. */
+  private investigate(w: Worm): void {
+    const lost = w.mass * 0.3;
+    w.mass = Math.max(20, w.mass - lost);
+    w.heat = 25;
+    w.stunT = Math.max(w.stunT, 1.6);
+    const h = w.head;
+    const n = Math.min(30, Math.max(6, Math.round(lost / 4)));
+    for (let i = 0; i < n && this.food.length < FOOD_HARD_CAP + 300; i++) {
+      const s = w.segs[Math.floor(Math.random() * w.segs.length)];
+      const f = new Food(s.x, s.y, 'spill', Math.round((lost * 0.8 / n) * 10) / 10, '#ffd23f', this.time);
+      const a = Math.random() * TAU;
+      f.vx = Math.cos(a) * rand(60, 200);
+      f.vy = Math.sin(a) * rand(60, 200);
+      this.food.push(f);
+    }
+    this.emit('ring', h.x, h.y, 0, 0, 0.8, 240, '#3d8bff');
+    this.emit('ring', h.x, h.y, 0, 0, 0.6, 180, '#ff3b3b');
+    if (w.id === this.focusId) this.text(h.x, h.y - w.radius * 2.5, `INVESTIGATED! −${Math.round(lost)}`, '#ff6b6b', 2.4, 26);
+    this.events.push({ t: 'busted', w: w.id, name: w.name, lost, x: h.x, y: h.y });
+  }
+
+  private updateSpecial(): void {
+    if (this.special || this.time < this.nextSpecialAt) return;
+    this.nextSpecialAt = this.time + rand(35, 55);
+    const site = Math.random() < 0.25 ? { x: BUCHAREST.x + BUCHAREST.w / 2, y: BUCHAREST.y + BUCHAREST.h / 2, name: 'București' } : pick(VILLAGES.map((v) => ({ x: v.x, y: v.y, name: v.name })));
+    const x = site.x + rand(-120, 120);
+    const y = site.y + rand(-120, 120);
+    const [label, value] = pick(SPECIAL_CONTRACTS);
+    const f = new Food(x, y, 'tender', value, '', this.time);
+    f.label = label;
+    f.place = site.name;
+    f.expires = this.time + SPECIAL_TTL;
+    this.food.push(f);
+    this.special = f;
+    this.emit('ring', x, y, 0, 0, 1, 300, '#ffd84d');
+    this.events.push({ t: 'special', label, place: site.name, value, x, y, ttl: SPECIAL_TTL });
   }
 
   private spawnNaturalFood(): void {

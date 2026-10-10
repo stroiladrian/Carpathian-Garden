@@ -50,9 +50,19 @@ If your **head** touches another worm's **body**, you're eliminated. In a head-o
 | Budget Bonus (gold coin) | 4 |
 | Public Contract (sealed paper) | 10 |
 | Briefcase of Cash | 16 |
+| Bribe Envelope | 8, but raises your **Anti-Bribe heat** |
+| **Special Contract** (timed, announced) | 40–70 |
 | Spilled Funds (from eliminated or boosting worms) | varies |
 
-The capital spawns noticeably more contracts and briefcases.
+The capital spawns noticeably more contracts, briefcases and bribes.
+
+### Bribes and the Anti-Bribe Directorate
+
+Each bribe envelope adds about 22 **heat** (the Party Baron gets 30% less). Heat cools off at roughly 2 per second. At 70 you get a warning, and at 100 you're **investigated**: you lose 30% of your power, which spills on the map as confiscated assets, and you're slowed for a moment. AI rivals play by the same rules and lay low when their heat is high.
+
+### Special contracts
+
+Every 35–55 seconds a special contract appears in a village or the capital, for example a No-Bid Motorway Contract, an EU Funds Package or a Hospital That Never Opens. A toast announces it, the minimap marks it, and an arrow at the screen edge points to it. It expires after 30 seconds, and nearby AI rivals race you for it. Tuning lives at the top of `src/game/world.ts` (`HEAT_PER_BRIBE`, `HEAT_DECAY`, `SPECIAL_TTL`, `SPECIAL_CONTRACTS`).
 
 ### Politicians
 

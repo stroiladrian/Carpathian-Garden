@@ -27,6 +27,8 @@ export class Sprites {
       contract: this.make(drawContract),
       briefcase: this.make(drawBriefcase),
       pledge: this.make(drawPledge),
+      envelope: this.make(drawEnvelope),
+      tender: this.make(drawTender),
     };
     this.shadow = makeCanvas(64, 64);
     const c = this.shadow.getContext('2d')!;
@@ -301,4 +303,72 @@ export function drawOpenCase(c: CanvasRenderingContext2D, x: number, y: number, 
   c.fillRect(-30, -22 * (1 - open * 0.4), 60, 22 * (1 - open * 0.4));
   c.restore();
   c.restore();
+}
+
+function drawEnvelope(c: CanvasRenderingContext2D): void {
+  glowBg(c, '#ff9a6b', 0.5);
+  c.rotate(-0.12);
+  c.fillStyle = 'rgba(0,0,0,0.25)';
+  c.fillRect(-31, -18, 66, 44);
+  // banknotes poking out
+  c.fillStyle = '#4fae7e';
+  c.fillRect(-20, -30, 34, 18);
+  c.fillStyle = '#5fb8d6';
+  c.fillRect(-8, -34, 30, 18);
+  c.fillStyle = '#f7f1e3';
+  c.fillRect(-34, -20, 68, 42);
+  c.strokeStyle = '#c9b78f';
+  c.lineWidth = 2;
+  c.strokeRect(-34, -20, 68, 42);
+  c.beginPath();
+  c.moveTo(-34, -20);
+  c.lineTo(0, 6);
+  c.lineTo(34, -20);
+  c.stroke();
+  c.fillStyle = '#c0392b';
+  c.beginPath();
+  c.arc(0, 4, 9, 0, Math.PI * 2);
+  c.fill();
+  c.fillStyle = '#fff3e0';
+  c.font = 'bold 11px sans-serif';
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  c.fillText('Ș', 0, 5);
+}
+
+function drawTender(c: CanvasRenderingContext2D): void {
+  glowBg(c, '#ffd84d', 0.85);
+  // golden scroll with tricolour ribbon
+  c.fillStyle = 'rgba(0,0,0,0.3)';
+  c.fillRect(-26, -30, 58, 66);
+  const g = c.createLinearGradient(-28, 0, 28, 0);
+  g.addColorStop(0, '#f6d365');
+  g.addColorStop(0.5, '#fff3c4');
+  g.addColorStop(1, '#e0a92a');
+  c.fillStyle = g;
+  c.fillRect(-28, -32, 56, 64);
+  c.fillStyle = '#d4a017';
+  c.beginPath();
+  c.ellipse(0, -32, 30, 6, 0, 0, Math.PI * 2);
+  c.fill();
+  c.beginPath();
+  c.ellipse(0, 32, 30, 6, 0, 0, Math.PI * 2);
+  c.fill();
+  c.strokeStyle = '#8a5a00';
+  c.lineWidth = 2;
+  for (let i = 0; i < 4; i++) {
+    c.beginPath();
+    c.moveTo(-18, -14 + i * 9);
+    c.lineTo(18, -14 + i * 9);
+    c.stroke();
+  }
+  ['#002b7f', '#fcd116', '#ce1126'].forEach((col, i) => {
+    c.fillStyle = col;
+    c.fillRect(-30 + i * 20, 18, 20, 7);
+  });
+  c.fillStyle = '#8a5a00';
+  c.font = 'bold 10px sans-serif';
+  c.textAlign = 'center';
+  c.fillText('CONTRACT', 0, -20);
+  c.fillText('SPECIAL', 0, 13);
 }

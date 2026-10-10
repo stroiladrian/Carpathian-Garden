@@ -9,6 +9,7 @@ export class Hud {
   readonly root = $('hud');
   private score = $('h-score');
   private title = $('h-title');
+  private heat = $('h-heat');
   private lei = $('h-lei');
   private rank = $('h-rank');
   private len = $('h-len');
@@ -68,6 +69,9 @@ export class Hud {
 
   update(p: Worm, rank: number, total: number, board: Worm[]): void {
     this.score.textContent = Math.floor(p.mass).toLocaleString('en-US');
+    this.heat.style.width = `${Math.min(100, p.heat)}%`;
+    this.heat.parentElement!.classList.toggle('hot', p.heat >= 70);
+    this.heat.parentElement!.classList.toggle('warm', p.heat > 0);
     const t = titleFor(p.peakMass);
     if (this.title.textContent !== t) this.title.textContent = t;
     this.lei.textContent = formatLei(p.money);

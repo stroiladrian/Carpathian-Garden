@@ -94,6 +94,14 @@ export class Sfx {
       this.tone(f, 0.08, 'triangle', 0.07);
       return;
     }
+    if (kind === 'envelope') {
+      this.bribe();
+      return;
+    }
+    if (kind === 'tender') {
+      this.special();
+      return;
+    }
     if (kind === 'gold') {
       this.tone(1320, 0.1, 'square', 0.05);
       this.tone(1760, 0.18, 'triangle', 0.08, undefined, 0.06);
@@ -105,6 +113,19 @@ export class Sfx {
       [523, 659, 784, 1047].forEach((f, i) => this.tone(f, 0.16, 'triangle', 0.1, undefined, i * 0.05));
       this.noise(0.12, 0.15, 3000, 3, 0.2);
     }
+  }
+
+  bribe(): void {
+    this.noise(0.12, 0.12, 2500, 2);
+    this.tone(1200, 0.1, 'triangle', 0.08, 900, 0.05);
+  }
+
+  special(): void {
+    [392, 523, 659, 784, 1047].forEach((f, i) => this.tone(f, 0.22, 'square', 0.06, undefined, i * 0.08));
+  }
+
+  siren(): void {
+    for (let i = 0; i < 4; i++) this.tone(i % 2 ? 660 : 880, 0.22, 'sawtooth', 0.07, undefined, i * 0.22);
   }
 
   boost(): void {

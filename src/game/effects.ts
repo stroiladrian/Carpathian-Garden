@@ -31,4 +31,9 @@ export type GameEvent =
   | { t: 'eat'; w: number; kind: FoodKind; value: number }
   | { t: 'death'; victim: number; victimName: string; killer: number | null; killerName: string | null; cause: 'body' | 'border'; x: number; y: number; mass: number }
   | { t: 'ability'; w: number; ab: ArchetypeId; x: number; y: number }
-  | { t: 'stunned'; w: number; by: number };
+  | { t: 'stunned'; w: number; by: number }
+  | { t: 'special'; label: string; place: string; value: number; x: number; y: number; ttl: number }
+  | { t: 'specialTaken'; w: number; name: string; label: string }
+  | { t: 'specialExpired'; label: string }
+  | { t: 'busted'; w: number; name: string; lost: number; x: number; y: number }
+  | { t: 'heatWarning'; w: number };

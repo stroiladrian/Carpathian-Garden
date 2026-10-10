@@ -57,6 +57,7 @@ export class AIBrain {
       let bx = 0;
       let by = 0;
       world.forEachFoodNear(h.x, h.y, 430, (f) => {
+        if (f.kind === 'envelope' && w.heat > 55) return; // laying low
         const d = Math.hypot(f.x - h.x, f.y - h.y);
         nearbyFood++;
         const s = f.value / (d + 90);
@@ -70,6 +71,18 @@ export class AIBrain {
         goal = Math.atan2(by - h.y, bx - h.x);
         mode = 'food';
         if (bestFood > 0.05 && w.mass > 90 && Math.random() < this.greed * 0.25) boost = true;
+      }
+
+      // race for an announced special contract
+      const sp = world.special;
+      if (sp && sp.alive) {
+        const d = Math.hypot(sp.x - h.x, sp.y - h.y);
+        if (d < 1700 && (this.greed > 0.55 || d < 650)) {
+          goal = Math.atan2(sp.y - h.y, sp.x - h.x);
+          mode = 'food';
+          bestFood = 0.2;
+          if (d < 550 && w.mass > 50) boost = true;
+        }
       }
 
       // hunting: try to cut in front of a rival's head

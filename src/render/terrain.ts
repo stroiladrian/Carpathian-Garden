@@ -856,7 +856,7 @@ function drawFeature(c: CanvasRenderingContext2D, f: Feature, scale: number): vo
       break;
     case 'billboard': {
       const { x, y, text, c: col } = f;
-      c.font = 'bold 18px "Lilita One", "Trebuchet MS", sans-serif';
+      c.font = 'bold 18px "Fredoka", "Trebuchet MS", sans-serif';
       const w = Math.max(160, c.measureText(text).width + 30);
       c.fillStyle = '#5b4636';
       c.fillRect(x - w * 0.3, y + 10, 6, 30);
@@ -914,7 +914,7 @@ function drawFeature(c: CanvasRenderingContext2D, f: Feature, scale: number): vo
 function labelText(c: CanvasRenderingContext2D, text: string, x: number, y: number, size: number, color: string, alpha: number): void {
   c.save();
   c.globalAlpha = alpha;
-  c.font = `${size}px "Lilita One", "Trebuchet MS", sans-serif`;
+  c.font = `700 ${size}px "Fredoka", "Trebuchet MS", sans-serif`;
   c.textAlign = 'center';
   c.textBaseline = 'middle';
   if (color !== '#0e2440') {

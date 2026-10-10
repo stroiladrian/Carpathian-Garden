@@ -415,6 +415,33 @@ export class App {
           }
           break;
         }
+        case 'special':
+          this.hud.toast(`SPECIAL CONTRACT in ${e.place}: ${e.label} (+${e.value}) — ${e.ttl}s!`, 'good');
+          this.sfx.special();
+          break;
+        case 'specialTaken':
+          if (e.w === p.id) {
+            this.hud.toast(`You won the ${e.label}!`, 'good');
+            buzz([30, 30, 60]);
+          } else this.hud.toast(`${e.name} grabbed the ${e.label}.`);
+          break;
+        case 'specialExpired':
+          this.hud.toast(`The ${e.label} was cancelled. Nobody noticed.`);
+          break;
+        case 'heatWarning':
+          if (e.w === p.id) this.hud.toast('The Anti-Bribe Directorate is watching you…', 'bad');
+          break;
+        case 'busted':
+          if (e.w === p.id) {
+            this.hud.toast(`INVESTIGATION! Assets confiscated (−${Math.round(e.lost)})`, 'bad');
+            this.sfx.siren();
+            buzz([60, 60, 60, 60, 120]);
+          } else if (e.lost > 60) {
+            this.hud.toast(`${e.name} is under investigation!`);
+            const d = Math.hypot(e.x - p.head.x, e.y - p.head.y);
+            if (d < 900) this.sfx.siren();
+          }
+          break;
         case 'stunned':
           if (e.w === p.id) {
             this.sfx.stunned();

@@ -46,6 +46,8 @@ export class Worm {
   killedBy: string | null = null;
   /** Scales food gains (AI difficulty / rubber-banding). The player stays at 1. */
   growthMult = 1;
+  /** Anti-Bribe Directorate attention, 0–100. At 100 you get investigated. */
+  heat = 0;
   deathCause: 'body' | 'border' | null = null;
 
   control: ControlInput = { angle: null, boost: false, ability: false };

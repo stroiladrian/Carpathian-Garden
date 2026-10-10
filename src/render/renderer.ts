@@ -81,6 +81,80 @@ export class Renderer {
 
     this.drawParticles(world.particles, z);
     this.drawTexts(world, z);
+    if (world.special && focus) this.drawSpecialArrow(world, cam, focus, t);
+  }
+
+  private drawBeacon(x: number, y: number, left: number, t: number): void {
+    const ctx = this.ctx;
+    const pulse = (t * 1.2) % 1;
+    ctx.strokeStyle = `rgba(255,216,77,${0.8 * (1 - pulse)})`;
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.arc(x, y, 40 + pulse * 120, 0, Math.PI * 2);
+    ctx.stroke();
+    const g = ctx.createRadialGradient(x, y, 10, x, y, 90);
+    g.addColorStop(0, 'rgba(255,230,120,0.55)');
+    g.addColorStop(1, 'rgba(255,230,120,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, 90, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.font = '700 22px "Fredoka", "Trebuchet MS", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = 'rgba(12,26,46,0.9)';
+    const txt = `${Math.max(0, Math.ceil(left))}s`;
+    ctx.strokeText(txt, x, y - 58);
+    ctx.fillStyle = left < 8 ? '#ff6b6b' : '#ffe14d';
+    ctx.fillText(txt, x, y - 58);
+  }
+
+  /** Screen-edge arrow toward the active special contract. */
+  private drawSpecialArrow(world: World, cam: Camera, focus: Worm, t: number): void {
+    const sp = world.special;
+    if (!sp) return;
+    const s = this.worldToScreen(cam, sp.x, sp.y);
+    const m = 46;
+    if (s.x > m && s.x < this.w - m && s.y > m && s.y < this.h - m) return;
+    const ctx = this.ctx;
+    const cx = this.w / 2;
+    const cy = this.h / 2;
+    const ang = Math.atan2(s.y - cy, s.x - cx);
+    const k = Math.min((cx - m) / Math.abs(Math.cos(ang) || 1e-6), (cy - m) / Math.abs(Math.sin(ang) || 1e-6));
+    const ax = cx + Math.cos(ang) * k;
+    const ay = cy + Math.sin(ang) * k;
+    const dist = Math.round(Math.hypot(sp.x - focus.head.x, sp.y - focus.head.y) / 10);
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    ctx.save();
+    ctx.translate(ax, ay);
+    const bob = Math.sin(t * 6) * 3;
+    ctx.save();
+    ctx.rotate(ang);
+    ctx.translate(bob, 0);
+    ctx.fillStyle = '#ffd84d';
+    ctx.strokeStyle = '#0c1a2e';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(22, 0);
+    ctx.lineTo(-10, -16);
+    ctx.lineTo(-4, 0);
+    ctx.lineTo(-10, 16);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fill();
+    ctx.restore();
+    ctx.font = '700 13px "Fredoka", "Trebuchet MS", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = 'rgba(12,26,46,0.9)';
+    const ty = ay > cy ? -28 : 28;
+    const label = `${sp.place} · ${dist} m`;
+    ctx.strokeText(label, 0, ty);
+    ctx.fillStyle = '#fff6dc';
+    ctx.fillText(label, 0, ty);
+    ctx.restore();
   }
 
   private drawBorder(ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number, focus: Worm | null, t: number): void {
@@ -128,6 +202,7 @@ export class Renderer {
         if (left < 5) a = Math.max(0, left / 5);
       }
       const img = f.kind === 'spill' ? sp.spill(f.color) : sp.food[f.kind];
+      if (f.kind === 'tender') this.drawBeacon(f.x, f.y, f.expires - t, t);
       if (a < 1) ctx.globalAlpha = a;
       ctx.drawImage(img, f.x - size / 2, f.y - size / 2 + bob, size, size);
       if (a < 1) ctx.globalAlpha = 1;
@@ -209,7 +284,7 @@ export class Renderer {
       this.drawAbilityFx(w, hx, hy, r, t);
       // name tag
       const fs = 13 / z;
-      ctx.font = `${fs}px "Lilita One", "Trebuchet MS", sans-serif`;
+      ctx.font = `700 ${fs}px "Fredoka", "Trebuchet MS", sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.lineWidth = 3 / z;
@@ -381,7 +456,7 @@ export class Renderer {
       const pop = life > 0.85 ? 1 + (life - 0.85) * 3 : 1;
       ctx.globalAlpha = Math.min(1, life * 2.5);
       const fs = (tx.size / z) * pop;
-      ctx.font = `${fs}px "Lilita One", "Trebuchet MS", sans-serif`;
+      ctx.font = `700 ${fs}px "Fredoka", "Trebuchet MS", sans-serif`;
       ctx.lineWidth = fs * 0.2;
       ctx.strokeStyle = 'rgba(12,26,46,0.9)';
       ctx.strokeText(tx.text, tx.x, tx.y);
@@ -430,6 +505,17 @@ export class Minimap {
       c.fill();
       c.globalAlpha = 1;
       if (w === top) drawStar(c, x, y - 7, 5, '#ffd84d');
+    }
+    if (world.special) {
+      const x = s / 2 + world.special.x * k;
+      const y = s / 2 + world.special.y * k;
+      c.strokeStyle = '#ffd84d';
+      c.lineWidth = 2;
+      c.beginPath();
+      c.arc(x, y, 4 + ((t * 8) % 7), 0, Math.PI * 2);
+      c.stroke();
+      c.fillStyle = '#ffd84d';
+      c.fillRect(x - 3, y - 3, 6, 6);
     }
     if (focus && focus.alive) {
       const x = s / 2 + focus.head.x * k;

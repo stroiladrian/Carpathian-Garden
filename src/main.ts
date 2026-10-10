@@ -15,7 +15,7 @@ function boot(): void {
 const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
 if (fonts && fonts.load) {
   Promise.race([
-    Promise.all([fonts.load('20px "Lilita One"'), fonts.load('800 16px "Nunito"')]),
+    Promise.all([fonts.load('700 20px "Fredoka"', 'AĂÂÎȘȚăâîșț'), fonts.load('800 16px "Nunito"', 'ăâîșț')]),
     new Promise((r) => setTimeout(r, 1500)),
   ]).finally(boot);
 } else {

@@ -2,7 +2,7 @@ import { BUCHAREST, inBucharest } from './layout';
 import { randomPointInCircle, TAU } from './math';
 import { WORLD_RADIUS } from './config';
 
-export type FoodKind = 'coin' | 'note' | 'gold' | 'contract' | 'briefcase' | 'pledge' | 'spill';
+export type FoodKind = 'coin' | 'note' | 'gold' | 'contract' | 'briefcase' | 'pledge' | 'envelope' | 'tender' | 'spill';
 
 export interface FoodDef {
   label: string;
@@ -19,11 +19,13 @@ export const FOOD_DEFS: Record<FoodKind, FoodDef> = {
   contract: { label: 'Public Contract', value: 10, lei: 25000, radius: 15, weight: 4 },
   briefcase: { label: 'Briefcase of Cash', value: 16, lei: 100000, radius: 16, weight: 2 },
   pledge: { label: 'Reform Pledge', value: 3, lei: 0, radius: 11, weight: 4 },
+  envelope: { label: 'Bribe Envelope', value: 8, lei: 50000, radius: 13, weight: 4 },
+  tender: { label: 'Special Contract', value: 60, lei: 5000000, radius: 24, weight: 0 },
   spill: { label: 'Spilled Funds', value: 1, lei: 300, radius: 7, weight: 0 },
 };
 
-const NATURAL: FoodKind[] = ['coin', 'note', 'gold', 'contract', 'briefcase', 'pledge'];
-const CAPITAL_WEIGHTS: Partial<Record<FoodKind, number>> = { coin: 40, note: 25, gold: 14, contract: 10, briefcase: 5, pledge: 2 };
+const NATURAL: FoodKind[] = ['coin', 'note', 'gold', 'contract', 'briefcase', 'pledge', 'envelope'];
+const CAPITAL_WEIGHTS: Partial<Record<FoodKind, number>> = { coin: 40, note: 25, gold: 14, contract: 10, briefcase: 5, pledge: 2, envelope: 9 };
 
 export class Food {
   x: number;
@@ -37,6 +39,10 @@ export class Food {
   phase: number;
   born: number;
   alive = true;
+  /** Special contracts: display name, place and expiry time. */
+  label = '';
+  place = '';
+  expires = 0;
   /** Set when a worm is pulling it in, so it can't be "stolen" mid-flight visually. */
   attractedBy = -1;
 

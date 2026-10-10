@@ -25,7 +25,7 @@ export class Menu {
       const card = el('button', 'char');
       card.type = 'button';
       card.setAttribute('role', 'radio');
-      card.setAttribute('aria-label', `${a.name}, ${a.title}`);
+      card.setAttribute('aria-label', a.name);
       const cv = el('canvas');
       cv.width = 220;
       cv.height = 220;
@@ -33,7 +33,7 @@ export class Menu {
       const stripe = el('div', 'stripe');
       stripe.style.background = `linear-gradient(90deg, ${a.colors.a} 50%, ${a.colors.b} 50%)`;
       const body = el('div', 'body');
-      body.append(el('div', 'title', a.title), el('h3', undefined, a.name), el('p', 'tag', a.tagline));
+      body.append(el('h3', undefined, a.name), el('p', 'tag', a.tagline));
       const p = el('div', 'perk p');
       p.append(el('b', undefined, `Passive · ${a.passiveName}`), document.createTextNode(a.passiveDesc));
       const ab = el('div', 'perk a');
