@@ -1,5 +1,6 @@
 import type { ArchetypeId } from './game/characters';
 import type { FoodKind } from './game/food';
+import { MenuMusic } from './music';
 
 /** Tiny WebAudio synth — every sound is generated, no audio files needed. */
 export class Sfx {
@@ -14,6 +15,9 @@ export class Sfx {
     this.muted = muted;
   }
 
+  private music: MenuMusic | null = null;
+  private wantMusic = false;
+  musicEnabled = true;
   private silentEl: HTMLAudioElement | null = null;
   private unlocked = false;
 
@@ -64,24 +68,48 @@ export class Sfx {
         }
         this.unlocked = true;
       }
+      this.syncMusic();
     } catch {
       /* audio unavailable — game continues silently */
     }
   }
 
   /** Call when the page becomes visible again (iOS suspends audio in the background). */
+  /** Menu tune: wanted on the candidate screen, off during play. */
+  setMenuMusic(want: boolean): void {
+    this.wantMusic = want;
+    this.syncMusic();
+  }
+
+  setMusicEnabled(on: boolean): void {
+    this.musicEnabled = on;
+    this.syncMusic();
+  }
+
+  private syncMusic(): void {
+    if (!this.ctx || !this.master || !this.noiseBuf) return;
+    const on = this.wantMusic && this.musicEnabled && !this.muted && !document.hidden;
+    if (on) {
+      if (!this.music) this.music = new MenuMusic(this.ctx, this.master, this.noiseBuf);
+      this.music.start();
+    } else this.music?.stop();
+  }
+
   wake(): void {
     if (this.ctx && this.ctx.state !== 'running') void this.ctx.resume().catch(() => undefined);
+    this.syncMusic();
     if (this.silentEl && this.silentEl.paused && this.unlocked) void this.silentEl.play().catch(() => undefined);
   }
 
   /** Pause background audio work while hidden. */
   sleep(): void {
     this.silentEl?.pause();
+    this.music?.stop(0.05);
   }
 
   setMuted(m: boolean): void {
     this.muted = m;
+    this.syncMusic();
     if (this.master && this.ctx) this.master.gain.setTargetAtTime(m ? 0 : 0.5, this.ctx.currentTime, 0.02);
   }
 

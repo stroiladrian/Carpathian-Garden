@@ -81,6 +81,8 @@ export class App {
       this.renderer.resize();
     }
 
+    this.sfx.setMusicEnabled(this.save.music);
+    this.sfx.setMenuMusic(true);
     this.bindUi();
     const onResize = () => this.renderer.resize();
     window.addEventListener('resize', onResize);
@@ -129,6 +131,18 @@ export class App {
     });
     $('leaderboard').addEventListener('click', () => this.hud.toggleLeaderboard());
     this.hud.buildPowers();
+    const musicBtn = $('menu-music');
+    const paintMusic = () => {
+      musicBtn.innerHTML = `${musicIcon(this.save.music)} <span>${this.save.music ? 'Muzică pornită' : 'Muzică oprită'}</span>`;
+    };
+    paintMusic();
+    musicBtn.addEventListener('click', () => {
+      this.save.music = !this.save.music;
+      writeSave({ music: this.save.music });
+      this.sfx.unlock();
+      this.sfx.setMusicEnabled(this.save.music);
+      paintMusic();
+    });
     this.hud.onPower = (id) => this.input.queuePower(id);
     $('play-sticky').addEventListener('click', () => this.startGame());
 
@@ -197,6 +211,7 @@ export class App {
 
   startGame(): void {
     this.sfx.unlock();
+    this.sfx.setMenuMusic(false);
     const arch = ARCHETYPES[this.menu.selected];
     const name = this.menu.nickname || 'Domnul Candidat';
     writeSave({ nickname: this.menu.nickname, character: arch.id });
@@ -231,6 +246,7 @@ export class App {
 
   toMenu(): void {
     this.state = 'menu';
+    this.sfx.setMenuMusic(true);
     this.session = new Session({ aiCount: 12, demo: true });
     this.demoFocus = null;
     $('pause').hidden = true;
@@ -547,4 +563,10 @@ function buzz(pattern: number | number[]): void {
 
 function isStandalone(): boolean {
   return window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
+}
+
+function musicIcon(on: boolean): string {
+  return on
+    ? '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M9 17V5l11-2v12" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.5" fill="currentColor"/><circle cx="17.5" cy="15.5" r="2.5" fill="currentColor"/></svg>'
+    : '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M9 17V5l11-2v12" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round" opacity="0.5"/><circle cx="6.5" cy="17.5" r="2.5" fill="currentColor" opacity="0.5"/><circle cx="17.5" cy="15.5" r="2.5" fill="currentColor" opacity="0.5"/><path d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 }

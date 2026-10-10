@@ -405,3 +405,4 @@ html.touch .power .p-abbr { font-size: 14px; }
 @media (max-height: 500px) and (orientation: landscape) {
   html.touch .powers { right: 172px; bottom: 0; flex-direction: row-reverse; }
 }
+.chip { display: inline-flex; align-items: center; gap: 6px; }

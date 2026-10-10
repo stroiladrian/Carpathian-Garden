@@ -8,6 +8,7 @@ export interface SaveData {
   touchSteer: 'joystick' | 'follow';
   touchHintSeen: boolean;
   difficulty: 'easy' | 'normal' | 'hard';
+  music: boolean;
 }
 
 const KEY = 'carpathian-garden:v1';
@@ -19,6 +20,7 @@ const DEFAULTS: SaveData = {
   touchSteer: 'joystick',
   touchHintSeen: false,
   difficulty: 'normal',
+  music: true,
 };
 
 export function loadSave(): SaveData {
