@@ -68,7 +68,7 @@ export class Hud {
   }
 
   update(p: Worm, rank: number, total: number, board: Worm[]): void {
-    this.score.textContent = Math.floor(p.mass).toLocaleString('en-US');
+    this.score.textContent = Math.floor(p.mass).toLocaleString('ro-RO');
     this.heat.style.width = `${Math.min(100, p.heat)}%`;
     this.heat.parentElement!.classList.toggle('hot', p.heat >= 70);
     this.heat.parentElement!.classList.toggle('warm', p.heat > 0);
@@ -107,7 +107,7 @@ export class Hud {
       const li = el('li', w === p ? 'me' : undefined);
       const dot = el('span', 'dot');
       dot.style.background = w.colors.a;
-      li.append(el('span', 'n', `${n}`), dot, el('span', 'nm', w.name), el('span', 'sc', Math.floor(w.mass).toLocaleString('en-US')));
+      li.append(el('span', 'n', `${n}`), dot, el('span', 'nm', w.name), el('span', 'sc', Math.floor(w.mass).toLocaleString('ro-RO')));
       this.lb.append(li);
     };
     for (const r of rows) add(r.n, r.w);

@@ -16,7 +16,7 @@
   --glass: rgba(12, 26, 46, 0.62);
   --glass-border: rgba(255, 246, 220, 0.14);
   --radius: 16px;
-  --display: 'Fredoka', 'Trebuchet MS', 'Arial Rounded MT Bold', system-ui, sans-serif;
+  --display: 'Baloo 2', 'Trebuchet MS', 'Arial Rounded MT Bold', system-ui, sans-serif;
   --body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
   color-scheme: dark;
 }
@@ -381,3 +381,6 @@ html.touch .action.ability .cd b { left: 50%; }
 .heat-strip { left: 128px; bottom: 7px; overflow: visible; }
 .heat-strip i { border-radius: 3px; }
 .heat-strip em { right: auto; left: -116px; top: -4px; opacity: 0.75; }
+/* Baloo 2 has tall built-in line spacing */
+.card h2, .section-title, .char h3, .subtitle, .stat b, .action .a-name, .leaderboard h3, .toast, .th-zone b, .go-office, .go-best { line-height: 1.12; }
+.stat b { line-height: 1.05; }

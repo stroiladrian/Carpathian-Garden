@@ -27,13 +27,13 @@ const HEAT_PER_BRIBE = 22;
 const HEAT_DECAY = 2.2; // per second
 const SPECIAL_TTL = 30;
 const SPECIAL_CONTRACTS: [string, number][] = [
-  ['No-Bid Motorway Contract', 70],
-  ['EU Funds Package', 55],
-  ['Stadium Renovation Deal', 60],
-  ['Ministry “Consultancy”', 45],
-  ['Roundabout of the Decade', 50],
-  ['Hospital That Never Opens', 65],
-  ['Sidewalk Repaving (Again)', 40],
+  ['Autostradă fără licitație', 70],
+  ['Pachet de fonduri europene', 55],
+  ['Renovarea stadionului', 60],
+  ['„Consultanță” la minister', 45],
+  ['Sensul giratoriu al deceniului', 50],
+  ['Spitalul care nu se mai deschide', 65],
+  ['Borduri noi (din nou)', 40],
 ];
 
 /**
@@ -386,8 +386,8 @@ export class World {
     this.emit('ring', h.x, h.y, 0, 0, 0.6, r * 6, w.colors.glow);
 
     const focus = this.focusId;
-    if (killer && killer.id === focus) this.text(h.x, h.y - r * 2, `ELIMINATED ${w.name}!`, '#ffe14d', 2.2, 26);
-    else if (w.id === focus) this.text(h.x, h.y - r * 2, cause === 'border' ? 'EXILED!' : 'SCANDAL!', '#ff5a4f', 2.4, 30);
+    if (killer && killer.id === focus) this.text(h.x, h.y - r * 2, `ELIMINAT: ${w.name}!`, '#ffe14d', 2.2, 26);
+    else if (w.id === focus) this.text(h.x, h.y - r * 2, cause === 'border' ? 'EXILAT!' : 'SCANDAL!', '#ff5a4f', 2.4, 30);
 
     this.events.push({
       t: 'death',
@@ -490,7 +490,7 @@ export class World {
       this.emit('star', f.x, f.y, 0, -20, 0.5, 10, '#fff2a8');
     }
     if (w.id === this.focusId && (f.kind === 'contract' || f.kind === 'briefcase' || f.kind === 'gold' || f.kind === 'pledge' || f.kind === 'envelope' || f.kind === 'tender')) {
-      const label = f.kind === 'tender' ? f.label : f.kind === 'envelope' ? 'Bribe (heat ↑)' : def.label;
+      const label = f.kind === 'tender' ? f.label : f.kind === 'envelope' ? 'Șpagă (radar ↑)' : def.label;
       const v = Math.round(gain * 10) / 10;
       this.text(f.x, f.y - 20, `+${v} ${label}`, f.kind === 'pledge' ? '#9fd0ff' : '#ffe14d', 1.2, f.kind === 'briefcase' ? 22 : 18);
     }
@@ -514,7 +514,7 @@ export class World {
     }
     this.emit('ring', h.x, h.y, 0, 0, 0.8, 240, '#3d8bff');
     this.emit('ring', h.x, h.y, 0, 0, 0.6, 180, '#ff3b3b');
-    if (w.id === this.focusId) this.text(h.x, h.y - w.radius * 2.5, `INVESTIGATED! −${Math.round(lost)}`, '#ff6b6b', 2.4, 26);
+    if (w.id === this.focusId) this.text(h.x, h.y - w.radius * 2.5, `ANCHETAT! −${Math.round(lost)}`, '#ff6b6b', 2.4, 26);
     this.events.push({ t: 'busted', w: w.id, name: w.name, lost, x: h.x, y: h.y });
   }
 

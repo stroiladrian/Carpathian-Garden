@@ -35,9 +35,9 @@ export class Menu {
       const body = el('div', 'body');
       body.append(el('h3', undefined, a.name), el('p', 'tag', a.tagline));
       const p = el('div', 'perk p');
-      p.append(el('b', undefined, `Passive · ${a.passiveName}`), document.createTextNode(a.passiveDesc));
+      p.append(el('b', undefined, `Pasiv · ${a.passiveName}`), document.createTextNode(a.passiveDesc));
       const ab = el('div', 'perk a');
-      ab.append(el('b', undefined, `Ability · ${a.abilityName} (${a.cooldown}s)`), document.createTextNode(a.abilityDesc));
+      ab.append(el('b', undefined, `Abilitate · ${a.abilityName} (${a.cooldown}s)`), document.createTextNode(a.abilityDesc));
       body.append(p, ab);
       card.append(cv, stripe, body, el('span', 'check', '✓'));
       card.addEventListener('click', () => {
@@ -73,11 +73,11 @@ export class Menu {
   }
 
   setBest(n: number): void {
-    this.best.textContent = Math.floor(n).toLocaleString('en-US');
+    this.best.textContent = Math.floor(n).toLocaleString('ro-RO');
   }
 
   setMuted(m: boolean): void {
-    this.soundBtn.innerHTML = `${soundIcon(m)} <span>${m ? 'Sound off' : 'Sound on'}</span>`;
+    this.soundBtn.innerHTML = `${soundIcon(m)} <span>${m ? 'Sunet oprit' : 'Sunet pornit'}</span>`;
     this.soundBtn.style.display = 'inline-flex';
     this.soundBtn.style.alignItems = 'center';
     this.soundBtn.style.gap = '6px';

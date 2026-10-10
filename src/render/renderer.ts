@@ -99,7 +99,7 @@ export class Renderer {
     ctx.beginPath();
     ctx.arc(x, y, 90, 0, Math.PI * 2);
     ctx.fill();
-    ctx.font = '700 22px "Fredoka", "Trebuchet MS", sans-serif';
+    ctx.font = '700 22px "Baloo 2", "Trebuchet MS", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.lineWidth = 5;
@@ -144,7 +144,7 @@ export class Renderer {
     ctx.stroke();
     ctx.fill();
     ctx.restore();
-    ctx.font = '700 13px "Fredoka", "Trebuchet MS", sans-serif';
+    ctx.font = '700 13px "Baloo 2", "Trebuchet MS", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.lineWidth = 4;
@@ -284,7 +284,7 @@ export class Renderer {
       this.drawAbilityFx(w, hx, hy, r, t);
       // name tag
       const fs = 13 / z;
-      ctx.font = `700 ${fs}px "Fredoka", "Trebuchet MS", sans-serif`;
+      ctx.font = `700 ${fs}px "Baloo 2", "Trebuchet MS", sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.lineWidth = 3 / z;
@@ -456,7 +456,7 @@ export class Renderer {
       const pop = life > 0.85 ? 1 + (life - 0.85) * 3 : 1;
       ctx.globalAlpha = Math.min(1, life * 2.5);
       const fs = (tx.size / z) * pop;
-      ctx.font = `700 ${fs}px "Fredoka", "Trebuchet MS", sans-serif`;
+      ctx.font = `700 ${fs}px "Baloo 2", "Trebuchet MS", sans-serif`;
       ctx.lineWidth = fs * 0.2;
       ctx.strokeStyle = 'rgba(12,26,46,0.9)';
       ctx.strokeText(tx.text, tx.x, tx.y);

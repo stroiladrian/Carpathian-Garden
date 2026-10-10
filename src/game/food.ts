@@ -13,15 +13,15 @@ export interface FoodDef {
 }
 
 export const FOOD_DEFS: Record<FoodKind, FoodDef> = {
-  coin: { label: 'Influence', value: 1, lei: 50, radius: 8, weight: 56 },
-  note: { label: 'Campaign Donation', value: 2, lei: 500, radius: 10, weight: 24 },
-  gold: { label: 'Budget Bonus', value: 4, lei: 2000, radius: 10, weight: 10 },
-  contract: { label: 'Public Contract', value: 10, lei: 25000, radius: 15, weight: 4 },
-  briefcase: { label: 'Briefcase of Cash', value: 16, lei: 100000, radius: 16, weight: 2 },
-  pledge: { label: 'Reform Pledge', value: 3, lei: 0, radius: 11, weight: 4 },
-  envelope: { label: 'Bribe Envelope', value: 8, lei: 50000, radius: 13, weight: 4 },
-  tender: { label: 'Special Contract', value: 60, lei: 5000000, radius: 24, weight: 0 },
-  spill: { label: 'Spilled Funds', value: 1, lei: 300, radius: 7, weight: 0 },
+  coin: { label: 'Influență', value: 1, lei: 50, radius: 8, weight: 56 },
+  note: { label: 'Donație de campanie', value: 2, lei: 500, radius: 10, weight: 24 },
+  gold: { label: 'Bonus de la buget', value: 4, lei: 2000, radius: 10, weight: 10 },
+  contract: { label: 'Contract public', value: 10, lei: 25000, radius: 15, weight: 4 },
+  briefcase: { label: 'Servietă cu bani', value: 16, lei: 100000, radius: 16, weight: 2 },
+  pledge: { label: 'Promisiune de reformă', value: 3, lei: 0, radius: 11, weight: 4 },
+  envelope: { label: 'Plic cu șpagă', value: 8, lei: 50000, radius: 13, weight: 4 },
+  tender: { label: 'Contract special', value: 60, lei: 5000000, radius: 24, weight: 0 },
+  spill: { label: 'Bani împrăștiați', value: 1, lei: 300, radius: 7, weight: 0 },
 };
 
 const NATURAL: FoodKind[] = ['coin', 'note', 'gold', 'contract', 'briefcase', 'pledge', 'envelope'];

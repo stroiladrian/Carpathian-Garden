@@ -18,14 +18,15 @@ export function soundIcon(muted: boolean): string {
 }
 
 export function formatLei(v: number): string {
-  if (v >= 1e9) return `${(v / 1e9).toFixed(2)}B`;
-  if (v >= 1e6) return `${(v / 1e6).toFixed(1)}M`;
-  if (v >= 1e4) return `${Math.round(v / 1e3)}K`;
-  return Math.round(v).toLocaleString('en-US');
+  const dec = (x: number, d: number) => x.toLocaleString('ro-RO', { minimumFractionDigits: d, maximumFractionDigits: d });
+  if (v >= 1e9) return `${dec(v / 1e9, 2)} mld.`;
+  if (v >= 1e6) return `${dec(v / 1e6, 1)} mil.`;
+  if (v >= 1e4) return `${Math.round(v / 1e3)} mii`;
+  return Math.round(v).toLocaleString('ro-RO');
 }
 
 export function formatTime(s: number): string {
   const m = Math.floor(s / 60);
   const r = Math.floor(s % 60);
-  return m > 0 ? `${m}m ${r.toString().padStart(2, '0')}s` : `${r}s`;
+  return m > 0 ? `${m} min ${r.toString().padStart(2, '0')} s` : `${r} s`;
 }

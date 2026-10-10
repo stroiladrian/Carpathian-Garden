@@ -1,7 +1,8 @@
 {
   "name": "Carpathian Garden",
   "short_name": "Carpathian",
-  "description": "Grab power. Grow huge. A satirical growth-and-survival arcade game.",
+  "description": "Prinde puterea. Crește cât țara. Un joc arcade satiric despre politica românească.",
+  "lang": "ro",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",

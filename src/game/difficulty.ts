@@ -30,8 +30,8 @@ export interface Difficulty {
 export const DIFFICULTIES: Record<DifficultyId, Difficulty> = {
   easy: {
     id: 'easy',
-    label: 'Intern',
-    blurb: 'Relaxed rivals. You’ll top the leaderboard.',
+    label: 'Stagiar',
+    blurb: 'Rivali relaxați. Ajungi sigur în fruntea clasamentului.',
     aiGrowth: 0.4,
     aiSoftCap: 450,
     aiCapDrain: 0.04,
@@ -44,8 +44,8 @@ export const DIFFICULTIES: Record<DifficultyId, Difficulty> = {
   },
   normal: {
     id: 'normal',
-    label: 'Candidate',
-    blurb: 'A fair fight. Reaching #1 takes a few minutes.',
+    label: 'Candidat',
+    blurb: 'Luptă dreaptă. Locul 1 vine după câteva minute de joc.',
     aiGrowth: 0.55,
     aiSoftCap: 850,
     aiCapDrain: 0.025,
@@ -58,8 +58,8 @@ export const DIFFICULTIES: Record<DifficultyId, Difficulty> = {
   },
   hard: {
     id: 'hard',
-    label: 'Party Baron',
-    blurb: 'Hungry, aggressive rivals that snowball.',
+    label: 'Baron de partid',
+    blurb: 'Rivali flămânzi și agresivi, care cresc ca bulgărele de zăpadă.',
     aiGrowth: 1,
     aiSoftCap: 6000,
     aiCapDrain: 0,
@@ -90,14 +90,14 @@ export function aiGrowthFactor(d: Difficulty, aiMass: number, playerMass: number
 
 /** Player titles by power — small milestones that make progress feel like winning. */
 export const RANKS: { at: number; title: string }[] = [
-  { at: 0, title: 'Local Councillor' },
-  { at: 80, title: 'Mayor' },
-  { at: 200, title: 'County Baron' },
+  { at: 0, title: 'Consilier local' },
+  { at: 80, title: 'Primar' },
+  { at: 200, title: 'Baron de județ' },
   { at: 400, title: 'Senator' },
-  { at: 700, title: 'Minister' },
-  { at: 1100, title: 'Prime Minister' },
-  { at: 1700, title: 'President' },
-  { at: 2600, title: 'Eternal Leader' },
+  { at: 700, title: 'Ministru' },
+  { at: 1100, title: 'Prim-ministru' },
+  { at: 1700, title: 'Președinte' },
+  { at: 2600, title: 'Conducător Veșnic' },
 ];
 
 export function titleFor(mass: number): string {

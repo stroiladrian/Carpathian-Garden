@@ -212,7 +212,7 @@ export class App {
     $('gameover').hidden = true;
     this.hud.show();
     this.state = 'playing';
-    this.hud.toast(`${arch.abilityName} is ready — ${this.isTouch ? 'tap your portrait' : 'press E'}!`, 'good');
+    this.hud.toast(`${arch.abilityName} e gata: ${this.isTouch ? 'atinge portretul' : 'apasă E'}!`, 'good');
     if (this.isTouch && !this.save.touchHintSeen && this.input.touchSteer === 'joystick') {
       $('touch-hint').hidden = false;
       this.hintHideAt = this.realTime + 7;
@@ -266,19 +266,19 @@ export class App {
       this.save.best = peak;
       writeSave({ best: peak });
     }
-    $('go-title').textContent = p.deathCause === 'border' ? 'Exiled from the country!' : 'Your campaign is over!';
+    $('go-title').textContent = p.deathCause === 'border' ? 'Exilat din țară!' : 'Cariera ta politică s-a încheiat!';
     $('go-cause').textContent =
       p.deathCause === 'border'
-        ? 'You wandered past the border. Nobody expects to see you again (until the next election).'
-        : `Out-manoeuvred by ${p.killedBy ?? 'a rival'}. The scandal broke at dawn.`;
-    $('go-score').textContent = Math.floor(p.mass).toLocaleString('en-US');
-    $('go-peak').textContent = peak.toLocaleString('en-US');
+        ? 'Ai trecut granița. Nu te mai așteaptă nimeni înapoi (până la următoarele alegeri).'
+        : `Te-a încolțit ${p.killedBy ?? 'un rival'}. Scandalul a izbucnit la prima oră.`;
+    $('go-score').textContent = Math.floor(p.mass).toLocaleString('ro-RO');
+    $('go-peak').textContent = peak.toLocaleString('ro-RO');
     $('go-rank').textContent = this.bestRank < 99 ? `#${this.bestRank}` : '-';
     $('go-kills').textContent = String(p.kills);
     $('go-lei').textContent = formatLei(p.money);
     $('go-time').textContent = formatTime(this.runTime);
-    $('go-office').textContent = `Highest office: ${titleFor(p.peakMass)}${this.reachedTop ? ' · reached #1' : ''}`;
-    $('go-best').textContent = isBest ? '★ New personal best! ★' : `Best score: ${this.save.best.toLocaleString('en-US')}`;
+    $('go-office').textContent = `Cea mai înaltă funcție: ${titleFor(p.peakMass)}${this.reachedTop ? ' · ai ajuns pe locul 1' : ''}`;
+    $('go-best').textContent = isBest ? '★ Record personal nou! ★' : `Recordul tău: ${this.save.best.toLocaleString('ro-RO')}`;
     renderPortrait($('go-portrait') as HTMLCanvasElement, p.arch, 'dead', 0);
   }
 
@@ -346,13 +346,13 @@ export class App {
     const title = titleFor(p.peakMass);
     if (title !== this.lastTitle) {
       this.lastTitle = title;
-      this.hud.toast(`Promoted: ${title}!`, 'good');
+      this.hud.toast(`Promovat: ${title}!`, 'good');
       this.sfx.pickup('briefcase');
       buzz(30);
     }
     if (rank === 1 && !this.reachedTop && this.runTime > 3) {
       this.reachedTop = true;
-      this.hud.toast('You are #1! The whole country is yours.', 'good');
+      this.hud.toast('Ești pe locul 1! Toată țara e a ta.', 'good');
       this.sfx.kill();
       buzz([40, 40, 80]);
       const h = p.head;
@@ -396,11 +396,11 @@ export class App {
           } else if (e.killer === p.id) {
             this.sfx.kill();
             buzz([25, 30, 25]);
-            this.hud.toast(`You eliminated ${e.victimName}!`, 'good');
+            this.hud.toast(`Ai eliminat: ${e.victimName}!`, 'good');
           } else {
             const d = Math.hypot(e.x - p.head.x, e.y - p.head.y);
             if (d < 900) this.sfx.pop(1 - d / 900);
-            if (e.mass > 250 && p.alive) this.hud.toast(`${e.victimName} has fallen (${Math.floor(e.mass)})`);
+            if (e.mass > 250 && p.alive) this.hud.toast(`A căzut: ${e.victimName} (${Math.floor(e.mass)})`);
           }
           break;
         }
@@ -416,28 +416,28 @@ export class App {
           break;
         }
         case 'special':
-          this.hud.toast(`SPECIAL CONTRACT in ${e.place}: ${e.label} (+${e.value}) — ${e.ttl}s!`, 'good');
+          this.hud.toast(`CONTRACT SPECIAL în ${e.place}: ${e.label} (+${e.value}), ${e.ttl}s!`, 'good');
           this.sfx.special();
           break;
         case 'specialTaken':
           if (e.w === p.id) {
-            this.hud.toast(`You won the ${e.label}!`, 'good');
+            this.hud.toast(`Ai câștigat: ${e.label}!`, 'good');
             buzz([30, 30, 60]);
-          } else this.hud.toast(`${e.name} grabbed the ${e.label}.`);
+          } else this.hud.toast(`${e.name} a pus mâna pe: ${e.label}.`);
           break;
         case 'specialExpired':
-          this.hud.toast(`The ${e.label} was cancelled. Nobody noticed.`);
+          this.hud.toast(`Anulat: ${e.label}. N-a observat nimeni.`);
           break;
         case 'heatWarning':
-          if (e.w === p.id) this.hud.toast('The Anti-Bribe Directorate is watching you…', 'bad');
+          if (e.w === p.id) this.hud.toast('Direcția Anti-Șpagă e cu ochii pe tine…', 'bad');
           break;
         case 'busted':
           if (e.w === p.id) {
-            this.hud.toast(`INVESTIGATION! Assets confiscated (−${Math.round(e.lost)})`, 'bad');
+            this.hud.toast(`ANCHETĂ! Bunuri confiscate (−${Math.round(e.lost)})`, 'bad');
             this.sfx.siren();
             buzz([60, 60, 60, 60, 120]);
           } else if (e.lost > 60) {
-            this.hud.toast(`${e.name} is under investigation!`);
+            this.hud.toast(`${e.name} e sub anchetă!`);
             const d = Math.hypot(e.x - p.head.x, e.y - p.head.y);
             if (d < 900) this.sfx.siren();
           }
@@ -446,7 +446,7 @@ export class App {
           if (e.w === p.id) {
             this.sfx.stunned();
             buzz(70);
-            this.hud.toast('Out-shouted! You are stunned.', 'bad');
+            this.hud.toast('Te-a luat pe sus cu gura! Ești amețit.', 'bad');
           }
           break;
       }

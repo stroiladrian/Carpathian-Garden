@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="ro">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
@@ -11,14 +11,14 @@
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
     <title>Carpathian Garden</title>
-    <meta name="description" content="Grab power. Grow huge. A satirical growth-and-survival arcade game in a cartoon Romania." />
+    <meta name="description" content="Prinde puterea. Crește cât țara. Un joc arcade satiric despre politica românească." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@600;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;800&display=swap" rel="stylesheet" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='20' cy='44' r='12' fill='%23ce1126'/%3E%3Ccircle cx='32' cy='32' r='13' fill='%23fcd116'/%3E%3Ccircle cx='44' cy='20' r='15' fill='%23002b7f'/%3E%3C/svg%3E" />
   </head>
   <body>
-    <canvas id="game" aria-label="Carpathian Garden game arena"></canvas>
+    <canvas id="game" aria-label="Arena de joc Carpathian Garden"></canvas>
 
     <!-- ───────────── Main menu ───────────── -->
     <div id="menu" class="screen">
@@ -26,90 +26,90 @@
         <header class="brand">
           <div class="tricolor" aria-hidden="true"><i></i><i></i><i></i></div>
           <h1><span class="l1">CARPATHIAN</span><span class="l2">GARDEN</span></h1>
-          <p class="subtitle">Grab power. Grow huge.</p>
+          <p class="subtitle">Prinde puterea. Crește cât țara.</p>
         </header>
 
         <section class="panel play-panel">
-          <label for="nick">Your candidate’s name</label>
+          <label for="nick">Numele candidatului tău</label>
           <div class="play-row">
             <input id="nick" maxlength="18" autocomplete="off" spellcheck="false" placeholder="Domnul Candidat" />
-            <button id="play" class="btn btn-gold">PLAY</button>
+            <button id="play" class="btn btn-gold">JOACĂ</button>
           </div>
           <div class="meta-row">
-            <span class="best">Best score <b id="best">0</b></span>
+            <span class="best">Record <b id="best">0</b></span>
             <div class="chip-row">
-              <button id="menu-fullscreen" class="chip touch-only" type="button" hidden>⛶ Fullscreen</button>
+              <button id="menu-fullscreen" class="chip touch-only" type="button" hidden>⛶ Ecran complet</button>
               <button id="menu-sound" class="chip" type="button"></button>
             </div>
           </div>
           <div class="diff-row">
-            <span>Difficulty</span>
-            <div class="seg" id="diff-seg" role="radiogroup" aria-label="Difficulty"></div>
+            <span>Dificultate</span>
+            <div class="seg" id="diff-seg" role="radiogroup" aria-label="Dificultate"></div>
           </div>
           <p class="diff-blurb" id="diff-blurb"></p>
           <div class="steer-row touch-only">
-            <span>Touch steering</span>
-            <div class="seg" role="radiogroup" aria-label="Touch steering">
-              <button type="button" id="steer-joystick" role="radio">Thumb joystick</button>
-              <button type="button" id="steer-follow" role="radio">Follow finger</button>
+            <span>Control tactil</span>
+            <div class="seg" role="radiogroup" aria-label="Control tactil">
+              <button type="button" id="steer-joystick" role="radio">Joystick</button>
+              <button type="button" id="steer-follow" role="radio">Urmărește degetul</button>
             </div>
           </div>
         </section>
 
-        <h2 class="section-title">Choose your politician</h2>
-        <section class="chars" id="chars" role="radiogroup" aria-label="Character selection"></section>
+        <h2 class="section-title">Alege-ți politicianul</h2>
+        <section class="chars" id="chars" role="radiogroup" aria-label="Alegerea personajului"></section>
 
         <details class="panel howto" open>
-          <summary>How to play</summary>
+          <summary>Cum se joacă</summary>
           <ul>
-            <li><b>Steer</b> with the mouse (or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / arrows, or drag on touch).</li>
-            <li><b>Collect</b> Influence, Campaign Donations, Budget Bonuses, Public Contracts and briefcases to grow.</li>
-            <li><b>Boost</b> with <kbd>Space</kbd> or hold the left mouse button — it burns a little mass.</li>
-            <li><b>Special ability</b>: <kbd>E</kbd> or right-click. Each politician has a different one.</li>
-            <li>If your <b>head touches another politician’s body</b>, your career is over. Make rivals crash into <i>you</i> and collect their spilled funds.</li>
-            <li>Don’t leave the country — the tricolour border is fatal. <kbd>P</kbd>/<kbd>Esc</kbd> pauses, <kbd>M</kbd> mutes.</li>
+            <li><b>Conduci</b> cu mouse-ul (sau cu <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / săgețile, ori trăgând cu degetul pe telefon).</li>
+            <li><b>Aduni</b> influență, donații de campanie, bonusuri de la buget, contracte publice și serviete ca să crești. Plicurile cu șpagă dau mult, dar atrag atenția Direcției Anti-Șpagă.</li>
+            <li><b>Accelerezi</b> cu <kbd>Space</kbd> sau ținând apăsat click stânga. Te costă puțină putere.</li>
+            <li><b>Abilitatea specială</b>: <kbd>E</kbd> sau click dreapta. Fiecare politician are una diferită.</li>
+            <li>Dacă <b>capul tău atinge corpul altui politician</b>, cariera ta s-a terminat. Fă-i pe rivali să se lovească de <i>tine</i> și strânge-le banii împrăștiați.</li>
+            <li>Nu părăsi țara: granița tricoloră e fatală. <kbd>P</kbd>/<kbd>Esc</kbd> pune pauză, <kbd>M</kbd> oprește sunetul.</li>
           </ul>
         </details>
-        <p class="pwa-tip touch-only" id="pwa-tip">Tip: add this page to your Home Screen to play fullscreen like an app.</p>
-        <p class="disclaimer">Fictional political parody. All characters are invented archetypes; rivals are computer-controlled AI, not real players.</p>
+        <p class="pwa-tip touch-only" id="pwa-tip">Sfat: adaugă pagina pe ecranul principal al telefonului ca să joci pe tot ecranul, ca într-o aplicație.</p>
+        <p class="disclaimer">Parodie politică fictivă. Toate personajele sunt inventate; rivalii sunt controlați de calculator, nu sunt jucători reali.</p>
       </div>
       <div class="sticky-play touch-only">
-        <button id="play-sticky" class="btn btn-gold" type="button">PLAY</button>
+        <button id="play-sticky" class="btn btn-gold" type="button">JOACĂ</button>
       </div>
     </div>
 
     <!-- ───────────── HUD ───────────── -->
     <div id="hud" hidden>
       <div class="hud-stats panel-glass">
-        <div class="stat big"><span id="h-title">Local Councillor</span><b id="h-score">0</b></div>
+        <div class="stat big"><span id="h-title">Consilier local</span><b id="h-score">0</b></div>
         <div class="stat"><span>Lei</span><b id="h-lei">0</b></div>
-        <div class="stat"><span>Rank</span><b id="h-rank">-</b></div>
-        <div class="stat"><span>Length</span><b id="h-len">0</b></div>
-        <div class="stat"><span>Eliminated</span><b id="h-kills">0</b></div>
-        <div class="heat-strip" title="Anti-Bribe Directorate attention"><i id="h-heat"></i><em>Anti-Bribe heat</em></div>
+        <div class="stat"><span>Loc</span><b id="h-rank">-</b></div>
+        <div class="stat"><span>Lungime</span><b id="h-len">0</b></div>
+        <div class="stat"><span>Eliminați</span><b id="h-kills">0</b></div>
+        <div class="heat-strip" title="Atenția Direcției Anti-Șpagă"><i id="h-heat"></i><em>Radar Anti-Șpagă</em></div>
       </div>
       <div class="hud-top">
-        <button id="btn-pause" class="icon-btn" title="Pause (P)" aria-label="Pause">
+        <button id="btn-pause" class="icon-btn" title="Pauză (P)" aria-label="Pauză">
           <svg viewBox="0 0 24 24" width="20" height="20"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></svg>
         </button>
-        <button id="btn-sound" class="icon-btn" title="Sound (M)" aria-label="Toggle sound"></button>
+        <button id="btn-sound" class="icon-btn" title="Sunet (M)" aria-label="Pornește/oprește sunetul"></button>
       </div>
-      <div class="leaderboard panel-glass" id="leaderboard" role="button" tabindex="0" aria-label="Leaderboard (tap to expand)">
-        <h3>Leaderboard</h3>
+      <div class="leaderboard panel-glass" id="leaderboard" role="button" tabindex="0" aria-label="Clasament (atinge pentru a extinde)">
+        <h3>Clasament</h3>
         <ol id="lb"></ol>
       </div>
       <canvas id="minimap" width="150" height="150" aria-hidden="true"></canvas>
       <div class="hud-actions">
         <button id="btn-boost" class="action boost" type="button">
-          <span class="a-name">BOOST</span>
-          <small class="kbd-hint">Space / hold click</small>
+          <span class="a-name">TURBO</span>
+          <small class="kbd-hint">Space / ține click</small>
           <div class="meter"><i id="boost-meter"></i></div>
         </button>
         <button id="btn-ability" class="action ability" type="button">
           <canvas id="ability-icon" width="96" height="96"></canvas>
           <div class="a-text">
-            <span class="a-name" id="ability-name">Ability</span>
-            <small class="kbd-hint">E / right-click</small>
+            <span class="a-name" id="ability-name">Abilitate</span>
+            <small class="kbd-hint">E / click dreapta</small>
           </div>
           <div class="cd" id="ability-cd"><b id="ability-cd-text"></b></div>
         </button>
@@ -117,20 +117,20 @@
       <div id="toasts" aria-live="polite"></div>
       <div id="joystick" aria-hidden="true"><div class="joy-base"></div><div class="joy-knob"></div></div>
       <div id="touch-hint" hidden>
-        <div class="th-zone th-left"><div class="th-icon joy"><i></i></div><b>Drag here to steer</b><span>a joystick appears under your thumb</span></div>
-        <div class="th-zone th-right"><div class="th-icon hold"><i></i></div><b>Hold here to boost</b><span>tap the portrait for your ability</span></div>
+        <div class="th-zone th-left"><div class="th-icon joy"><i></i></div><b>Trage aici ca să conduci</b><span>apare un joystick sub degetul mare</span></div>
+        <div class="th-zone th-right"><div class="th-icon hold"><i></i></div><b>Ține apăsat aici pentru turbo</b><span>atinge portretul pentru abilitate</span></div>
       </div>
     </div>
 
     <!-- ───────────── Pause ───────────── -->
     <div id="pause" class="overlay" hidden>
       <div class="card">
-        <h2>Session suspended</h2>
-        <p class="muted">Parliament is on a well-deserved break.</p>
+        <h2>Ședință suspendată</h2>
+        <p class="muted">Parlamentul e într-o binemeritată vacanță.</p>
         <div class="btn-col">
-          <button id="p-resume" class="btn btn-gold">Resume</button>
-          <button id="p-restart" class="btn">Restart</button>
-          <button id="p-menu" class="btn btn-ghost">Main menu</button>
+          <button id="p-resume" class="btn btn-gold">Continuă</button>
+          <button id="p-restart" class="btn">Joc nou</button>
+          <button id="p-menu" class="btn btn-ghost">Meniu principal</button>
         </div>
       </div>
     </div>
@@ -139,21 +139,21 @@
     <div id="gameover" class="overlay" hidden>
       <div class="card go-card">
         <canvas id="go-portrait" width="160" height="160"></canvas>
-        <h2 id="go-title">Your campaign is over!</h2>
+        <h2 id="go-title">Cariera ta politică s-a încheiat!</h2>
         <p id="go-cause" class="muted"></p>
         <p class="go-office" id="go-office"></p>
         <div class="go-stats">
-          <div><span>Final power</span><b id="go-score">0</b></div>
-          <div><span>Peak power</span><b id="go-peak">0</b></div>
-          <div><span>Best rank</span><b id="go-rank">-</b></div>
-          <div><span>Rivals eliminated</span><b id="go-kills">0</b></div>
-          <div><span>Lei collected</span><b id="go-lei">0</b></div>
-          <div><span>Time in office</span><b id="go-time">0s</b></div>
+          <div><span>Putere finală</span><b id="go-score">0</b></div>
+          <div><span>Putere maximă</span><b id="go-peak">0</b></div>
+          <div><span>Cel mai bun loc</span><b id="go-rank">-</b></div>
+          <div><span>Rivali eliminați</span><b id="go-kills">0</b></div>
+          <div><span>Lei strânși</span><b id="go-lei">0</b></div>
+          <div><span>Timp în funcție</span><b id="go-time">0s</b></div>
         </div>
         <p class="go-best" id="go-best"></p>
         <div class="btn-col">
-          <button id="go-retry" class="btn btn-gold">Run again</button>
-          <button id="go-menu" class="btn btn-ghost">Change politician</button>
+          <button id="go-retry" class="btn btn-gold">Mai încearcă</button>
+          <button id="go-menu" class="btn btn-ghost">Alt politician</button>
         </div>
       </div>
     </div>
