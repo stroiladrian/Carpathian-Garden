@@ -1,4 +1,5 @@
 import type { ControlInput } from './game/worm';
+import type { PowerId } from './game/powers';
 
 export type TouchSteer = 'joystick' | 'follow';
 
@@ -29,6 +30,7 @@ export class Input {
   private keys = new Set<string>();
   private usingKeys = false;
   private abilityQueued = false;
+  private powerQueued: PowerId | null = null;
 
   touchSteer: TouchSteer = 'joystick';
   private steerId: number | null = null;
@@ -88,6 +90,7 @@ export class Input {
       }
       if (e.code === 'Space') e.preventDefault();
       if (!e.repeat && (e.code === 'KeyE' || e.code === 'KeyQ')) this.abilityQueued = true;
+      if (!e.repeat && POWER_KEYS[e.code]) this.powerQueued = POWER_KEYS[e.code];
       this.keys.add(e.code);
       this.onKey?.(e.code, e);
     });
@@ -171,6 +174,10 @@ export class Input {
     this.joyAngle = null;
   }
 
+  queuePower(id: PowerId): void {
+    this.powerQueued = id;
+  }
+
   queueAbility(): void {
     this.abilityQueued = true;
   }
@@ -193,7 +200,9 @@ export class Input {
       this.mouseDown || this.boostButton || this.boostIds.size > 0 || k.has('Space') || k.has('ShiftLeft') || k.has('ShiftRight');
     const ability = this.abilityQueued;
     this.abilityQueued = false;
-    return { angle, boost, ability };
+    const power = this.powerQueued;
+    this.powerQueued = null;
+    return { angle, boost, ability, power };
   }
 
   /** Seeds the joystick heading so the worm doesn't snap when a run starts. */
@@ -203,3 +212,5 @@ export class Input {
 }
 
 const DIR_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+
+const POWER_KEYS: Record<string, PowerId> = { Digit1: 'asfalt', Digit2: 'judge', Digit3: 'oug', Digit4: 'licit', Numpad1: 'asfalt', Numpad2: 'judge', Numpad3: 'oug', Numpad4: 'licit' };

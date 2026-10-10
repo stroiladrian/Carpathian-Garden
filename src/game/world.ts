@@ -19,6 +19,7 @@ import { Food, FOOD_DEFS, FoodKind, rollNaturalFood } from './food';
 import { Grid } from './grid';
 import { angleDiff, clamp, pick, rand, randomPointInCircle, TAU } from './math';
 import { BUCHAREST, VILLAGES } from './layout';
+import { POWER_BY_ID, PowerId } from './powers';
 import { Worm } from './worm';
 
 const MAX_PARTICLES = 900;
@@ -26,6 +27,8 @@ const MAX_SEG_RADIUS = 42;
 const HEAT_PER_BRIBE = 22;
 const HEAT_DECAY = 2.2; // per second
 const SPECIAL_TTL = 30;
+const LICIT_RANGE = 900;
+const VALUABLES = new Set<FoodKind>(['contract', 'briefcase', 'envelope', 'tender', 'gold']);
 const SPECIAL_CONTRACTS: [string, number][] = [
   ['Autostradă fără licitație', 70],
   ['Pachet de fonduri europene', 55],
@@ -149,6 +152,15 @@ export class World {
     w.heat = Math.max(0, w.heat - HEAT_DECAY * dt);
 
     if (w.control.ability && w.abilityCd <= 0) this.activateAbility(w);
+    w.legalT = Math.max(0, w.legalT - dt);
+    w.licitT = Math.max(0, w.licitT - dt);
+    for (const k in w.powerCd) w.powerCd[k as PowerId] = Math.max(0, (w.powerCd[k as PowerId] ?? 0) - dt);
+    const pw = w.control.power;
+    if (pw) {
+      w.control.power = null;
+      const def = POWER_BY_ID[pw];
+      if (def && w.peakMass >= def.unlockAt && (w.powerCd[pw] ?? 0) <= 0) this.activatePower(w, pw);
+    }
 
     const r = w.radius;
     // steering
@@ -449,6 +461,76 @@ export class World {
         f.y += (dy / d) * pull;
       }
     });
+    if (w.licitT > 0) {
+      this.foodGrid.query(h.x, h.y, LICIT_RANGE, (i) => {
+        const f = this.gridFood[i];
+        if (!f.alive || !VALUABLES.has(f.kind)) return;
+        const dx = h.x - f.x;
+        const dy = h.y - f.y;
+        const d = Math.hypot(dx, dy);
+        if (d > LICIT_RANGE || d < 1) return;
+        const pull = Math.min(d, 700 * dt);
+        f.x += (dx / d) * pull;
+        f.y += (dy / d) * pull;
+        if (Math.random() < 0.05 * this.effectsScale) this.emit('spark', f.x, f.y, 0, 0, 0.3, 4, '#ff6b6b');
+      });
+    }
+  }
+
+  private activatePower(w: Worm, id: PowerId): void {
+    const def = POWER_BY_ID[id];
+    w.powerCd[id] = def.cooldown;
+    const h = w.head;
+    const r = w.radius;
+    const fwd = w.angle;
+    switch (id) {
+      case 'asfalt': {
+        // fresh asphalt sprinkled with campaign money
+        for (let i = 0; i < 18; i++) {
+          const a = (i / 18) * TAU + rand(-0.1, 0.1);
+          const dist = rand(140, 260);
+          const kind: FoodKind = i % 6 === 0 ? 'contract' : i % 3 === 0 ? 'gold' : 'note';
+          const f = new Food(h.x + Math.cos(a) * dist, h.y + Math.sin(a) * dist, kind, FOOD_DEFS[kind].value, '', this.time);
+          this.food.push(f);
+        }
+        this.emit('ring', h.x, h.y, 0, 0, 0.8, 260, '#8d8f96');
+        for (let i = 0; i < 12; i++) this.emit('confetti', h.x, h.y, rand(-200, 200), rand(-200, 200), 1, 10, '#3e4148');
+        break;
+      }
+      case 'judge': {
+        w.heat = 0;
+        w.legalT = 6;
+        w.stunT = 0;
+        this.emit('ring', h.x, h.y, 0, 0, 0.9, 280, '#b07cff');
+        this.emit('ring', h.x, h.y, 0, 0, 0.6, 180, '#ffffff');
+        for (let i = 0; i < 10; i++) this.emit('paper', h.x, h.y, rand(-180, 180), rand(-180, 180), 1.1, 10, '#fffaf0');
+        break;
+      }
+      case 'oug': {
+        const cx = h.x + Math.cos(fwd) * (r * 4 + 160);
+        const cy = h.y + Math.sin(fwd) * (r * 4 + 160);
+        const t = new Food(cx, cy, 'tender', 50, '', this.time);
+        t.label = 'Ordonanță de urgență';
+        t.place = 'lângă tine';
+        t.expires = this.time + 15;
+        this.food.push(t);
+        for (let i = 0; i < 6; i++) {
+          const a = fwd + rand(-1.2, 1.2);
+          const dist = rand(120, 320);
+          const e = new Food(h.x + Math.cos(a) * dist, h.y + Math.sin(a) * dist, 'envelope', FOOD_DEFS.envelope.value, '', this.time);
+          e.clean = true;
+          this.food.push(e);
+        }
+        this.emit('ring', cx, cy, 0, 0, 0.9, 200, '#ffd84d');
+        break;
+      }
+      case 'licit':
+        w.licitT = 4;
+        this.emit('ring', h.x, h.y, 0, 0, 1, LICIT_RANGE, '#ce1126');
+        break;
+    }
+    if (w.id === this.focusId) this.text(h.x, h.y - r * 3, def.name + '!', def.color === '#8d8f96' ? '#e6e6ea' : def.color, 2, 24);
+    this.events.push({ t: 'power', w: w.id, id, x: h.x, y: h.y });
   }
 
   private eat(w: Worm, f: Food): void {
@@ -464,7 +546,7 @@ export class World {
     w.money += (f.kind === 'spill' ? f.value * 300 : def.lei) * mult;
     if (f.kind !== 'coin' && f.kind !== 'spill') w.eatT = 0.28;
     this.events.push({ t: 'eat', w: w.id, kind: f.kind, value: gain });
-    if (f.kind === 'envelope') {
+    if (f.kind === 'envelope' && !f.clean && w.legalT <= 0) {
       const before = w.heat;
       w.heat += HEAT_PER_BRIBE * (id === 'baron' ? 0.7 : 1);
       if (before < 70 && w.heat >= 70 && w.heat < 100) this.events.push({ t: 'heatWarning', w: w.id });

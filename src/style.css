@@ -384,3 +384,24 @@ html.touch .action.ability .cd b { left: 50%; }
 /* Baloo 2 has tall built-in line spacing */
 .card h2, .section-title, .char h3, .subtitle, .stat b, .action .a-name, .leaderboard h3, .toast, .th-zone b, .go-office, .go-best { line-height: 1.12; }
 .stat b { line-height: 1.05; }
+/* office powers */
+.powers { display: flex; gap: 8px; align-items: flex-end; }
+.power {
+  position: relative; width: 52px; height: 52px; border-radius: 14px; border: 2px solid color-mix(in srgb, var(--pc) 70%, white);
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--pc) 70%, white 10%), color-mix(in srgb, var(--pc) 45%, #0c1a2e));
+  color: #fff; display: grid; place-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.35); overflow: hidden;
+  animation: power-in 0.4s ease-out;
+}
+.power .p-abbr { font-family: var(--display); font-size: 16px; letter-spacing: 0.5px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+.power .p-key { position: absolute; top: 2px; right: 5px; font-size: 10px; font-weight: 800; opacity: 0.85; }
+.power .cd { position: absolute; inset: 0; display: grid; place-items: center; background: conic-gradient(rgba(12,26,46,0.8) calc(var(--p, 0) * 1turn), transparent 0); }
+.power .cd b { font-family: var(--display); font-size: 18px; }
+.power.ready { box-shadow: 0 0 0 2px rgba(255,255,255,0.15), 0 0 16px color-mix(in srgb, var(--pc) 70%, transparent); }
+.power.active { transform: scale(1.08); box-shadow: 0 0 22px #fff; }
+@keyframes power-in { from { transform: scale(0.3); opacity: 0; } }
+html.touch .powers { position: absolute; right: 0; bottom: 196px; flex-direction: row-reverse; gap: 8px; }
+html.touch .power { width: 46px; height: 46px; border-radius: 50%; }
+html.touch .power .p-abbr { font-size: 14px; }
+@media (max-height: 500px) and (orientation: landscape) {
+  html.touch .powers { right: 172px; bottom: 0; flex-direction: row-reverse; }
+}

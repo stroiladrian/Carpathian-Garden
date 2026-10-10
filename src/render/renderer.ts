@@ -310,6 +310,33 @@ export class Renderer {
       ctx.stroke();
       ctx.setLineDash([]);
     }
+    if (w.legalT > 0) {
+      // the case is closed: violet halo with orbiting files
+      ctx.strokeStyle = `rgba(176,124,255,${0.6 + 0.3 * Math.sin(t * 10)})`;
+      ctx.lineWidth = 5;
+      ctx.setLineDash([14, 10]);
+      ctx.beginPath();
+      ctx.arc(x, y, r * 2.6, t * 2, t * 2 + Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      for (let k = 0; k < 3; k++) {
+        const a = t * 3 + (k * Math.PI * 2) / 3;
+        const px = x + Math.cos(a) * r * 2.6;
+        const py = y + Math.sin(a) * r * 2.6;
+        ctx.fillStyle = '#fffaf0';
+        ctx.fillRect(px - 6, py - 8, 12, 16);
+        ctx.fillStyle = '#8e44ad';
+        ctx.fillRect(px - 4, py - 4, 8, 2);
+      }
+    }
+    if (w.licitT > 0) {
+      const pr = (t * 2) % 1;
+      ctx.strokeStyle = `rgba(206,17,38,${0.5 * (1 - pr)})`;
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.arc(x, y, 900 * (1 - pr), 0, Math.PI * 2);
+      ctx.stroke();
+    }
     if (w.abilityT <= 0) return;
     switch (w.arch.id) {
       case 'firebrand': {

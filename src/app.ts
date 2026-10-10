@@ -13,6 +13,7 @@ import { $, formatLei, formatTime } from './ui/dom';
 import { Hud } from './ui/hud';
 import { Menu } from './ui/menu';
 import { DIFFICULTIES, DIFFICULTY_LIST, DifficultyId, titleFor } from './game/difficulty';
+import { POWERS, POWER_BY_ID } from './game/powers';
 
 type State = 'menu' | 'playing' | 'paused' | 'gameover';
 
@@ -48,6 +49,7 @@ export class App {
   private slowStreak = 0;
   private lastTitle = '';
   private reachedTop = false;
+  private unlockedPowers = new Set<string>();
 
   constructor() {
     const canvas = $('game') as HTMLCanvasElement;
@@ -126,6 +128,8 @@ export class App {
       this.input.queueAbility();
     });
     $('leaderboard').addEventListener('click', () => this.hud.toggleLeaderboard());
+    this.hud.buildPowers();
+    this.hud.onPower = (id) => this.input.queuePower(id);
     $('play-sticky').addEventListener('click', () => this.startGame());
 
     // touch steering mode
@@ -199,6 +203,7 @@ export class App {
     this.session = new Session({ aiCount: AI_COUNT, player: { name, arch }, difficulty: DIFFICULTIES[this.save.difficulty] ?? DIFFICULTIES.normal });
     this.lastTitle = titleFor(0);
     this.reachedTop = false;
+    this.unlockedPowers.clear();
     if (this.isTouch) this.session.world.effectsScale = 0.75;
     const p = this.session.player!;
     this.cam = { x: p.head.x, y: p.head.y, zoom: this.renderer.zoomFor(p.radius) };
@@ -353,6 +358,12 @@ export class App {
       this.sfx.pickup('briefcase');
       buzz(30);
     }
+    for (const pd of POWERS) {
+      if (p.peakMass >= pd.unlockAt && !this.unlockedPowers.has(pd.id)) {
+        this.unlockedPowers.add(pd.id);
+        this.hud.toast(`Putere nouă: ${pd.name} (${this.isTouch ? 'buton ' + pd.abbr : 'tasta ' + pd.key})`, 'good');
+      }
+    }
     if (rank === 1 && !this.reachedTop && this.runTime > 3) {
       this.reachedTop = true;
       this.hud.toast('Ești pe locul 1! Toată țara e a ta.', 'good');
@@ -418,6 +429,17 @@ export class App {
           }
           break;
         }
+        case 'power':
+          if (e.w === p.id) {
+            const pd = POWER_BY_ID[e.id as keyof typeof POWER_BY_ID];
+            if (pd?.id === 'judge') this.hud.toast('Dosar clasat! Ești de neatins 6 secunde.', 'good');
+            else if (pd?.id === 'oug') this.hud.toast('OUG adoptată noaptea: contract și plicuri doar pentru tine!', 'good');
+            else if (pd?.id === 'licit') this.hud.toast('Licitație cu dedicație: totul vine la tine!', 'good');
+            else this.hud.toast('Asfalt proaspăt, bani proaspeți!', 'good');
+            this.sfx.special();
+            buzz([20, 20, 40]);
+          }
+          break;
         case 'special':
           this.hud.toast(`CONTRACT SPECIAL în ${e.place}: ${e.label} (+${e.value}), ${e.ttl}s!`, 'good');
           this.sfx.special();

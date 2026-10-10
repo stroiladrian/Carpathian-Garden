@@ -3,6 +3,7 @@ import { MIN_BOOST_MASS } from '../game/config';
 import type { Worm } from '../game/worm';
 import { renderPortrait } from '../render/heads';
 import { titleFor } from '../game/difficulty';
+import { POWERS, PowerId } from '../game/powers';
 import { $, el, formatLei, soundIcon } from './dom';
 
 export class Hud {
@@ -29,6 +30,34 @@ export class Hud {
   private joyEl = $('joystick');
   private joyKnob = this.joyEl.querySelector('.joy-knob') as HTMLElement;
   private joyShown = false;
+  private powerBtns = new Map<PowerId, { btn: HTMLButtonElement; cd: HTMLElement; txt: HTMLElement }>();
+  onPower: ((id: PowerId) => void) | null = null;
+
+  buildPowers(): void {
+    const wrap = $('powers');
+    wrap.replaceChildren();
+    this.powerBtns.clear();
+    for (const p of POWERS) {
+      const btn = el('button', 'power');
+      btn.type = 'button';
+      btn.hidden = true;
+      btn.title = `${p.name} (${p.key}): ${p.desc}`;
+      btn.setAttribute('aria-label', p.name);
+      btn.style.setProperty('--pc', p.color);
+      const ab = el('b', 'p-abbr', p.abbr);
+      const key = el('small', 'p-key kbd-hint', p.key);
+      const cd = el('div', 'cd');
+      const txt = el('b');
+      cd.append(txt);
+      btn.append(ab, key, cd);
+      btn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        this.onPower?.(p.id);
+      });
+      wrap.append(btn);
+      this.powerBtns.set(p.id, { btn, cd, txt });
+    }
+  }
 
   constructor() {
     if (document.documentElement.classList.contains('touch')) this.lbBox.classList.add('compact');
@@ -78,6 +107,21 @@ export class Hud {
     this.rank.textContent = `#${rank}/${total}`;
     this.len.textContent = `${p.segs.length}`;
     this.kills.textContent = `${p.kills}`;
+
+    // office powers
+    for (const pd of POWERS) {
+      const ui = this.powerBtns.get(pd.id);
+      if (!ui) continue;
+      const unlocked = p.peakMass >= pd.unlockAt;
+      if (ui.btn.hidden === unlocked) ui.btn.hidden = !unlocked;
+      if (!unlocked) continue;
+      const cd = p.powerCd[pd.id] ?? 0;
+      const active = (pd.id === 'judge' && p.legalT > 0) || (pd.id === 'licit' && p.licitT > 0);
+      ui.btn.classList.toggle('ready', cd <= 0);
+      ui.btn.classList.toggle('active', active);
+      ui.cd.style.setProperty('--p', cd > 0 ? String(cd / pd.cooldown) : '0');
+      ui.txt.textContent = cd > 0 ? String(Math.ceil(cd)) : '';
+    }
 
     // boost
     const canBoost = p.mass > MIN_BOOST_MASS;

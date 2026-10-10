@@ -36,4 +36,5 @@ export type GameEvent =
   | { t: 'specialTaken'; w: number; name: string; label: string }
   | { t: 'specialExpired'; label: string }
   | { t: 'busted'; w: number; name: string; lost: number; x: number; y: number }
-  | { t: 'heatWarning'; w: number };
+  | { t: 'heatWarning'; w: number }
+  | { t: 'power'; w: number; id: string; x: number; y: number };

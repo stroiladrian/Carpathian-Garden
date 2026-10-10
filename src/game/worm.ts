@@ -1,4 +1,5 @@
 import type { Archetype, BodyColors } from './characters';
+import type { PowerId } from './powers';
 import { radiusForMass, segmentSpacing, SPAWN_SHIELD } from './config';
 
 /** Per-tick steering intent. Produced by the local player, the AI, or (later) a network client. */
@@ -7,6 +8,8 @@ export interface ControlInput {
   angle: number | null;
   boost: boolean;
   ability: boolean;
+  /** Office power to fire this tick, if any. */
+  power?: PowerId | null;
 }
 
 export interface Seg {
@@ -48,6 +51,10 @@ export class Worm {
   growthMult = 1;
   /** Anti-Bribe Directorate attention, 0–100. At 100 you get investigated. */
   heat = 0;
+  /** Office-power cooldowns and timers. */
+  powerCd: Partial<Record<PowerId, number>> = {};
+  legalT = 0; // 'judge': untouchable + no heat
+  licitT = 0; // 'licit': long-range pull of valuables
   deathCause: 'body' | 'border' | null = null;
 
   control: ControlInput = { angle: null, boost: false, ability: false };
@@ -90,7 +97,7 @@ export class Worm {
   }
   /** True when rival bodies can't kill this worm and its own body isn't solid. */
   get shielded(): boolean {
-    return this.spawnShield > 0 || (this.arch.id === 'reformer' && this.abilityT > 0);
+    return this.spawnShield > 0 || this.legalT > 0 || (this.arch.id === 'reformer' && this.abilityT > 0);
   }
   get abilityReady(): boolean {
     return this.abilityCd <= 0;

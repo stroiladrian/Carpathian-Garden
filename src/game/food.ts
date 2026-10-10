@@ -43,6 +43,8 @@ export class Food {
   label = '';
   place = '';
   expires = 0;
+  /** Bribes from an emergency ordinance don't show up on the radar. */
+  clean = false;
   /** Set when a worm is pulling it in, so it can't be "stolen" mid-flight visually. */
   attractedBy = -1;
 

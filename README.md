@@ -82,6 +82,19 @@ Nickname, character, sound setting, touch steering mode and best score are saved
 - **Add to Home Screen** (Safari Share menu / Chrome menu) to play fullscreen like an app. On Android the menu also has a Fullscreen button.
 - Rendering resolution drops automatically on devices that can't hold ~45 fps.
 
+### Puteri de funcție (office powers)
+
+Unlocked by your peak power as you climb the titles, each with its own cooldown. Use keys `1`–`4` or the round buttons on screen.
+
+| Key | Power | Unlocks at | Cooldown | Effect |
+| --- | --- | --- | --- | --- |
+| 1 | Asfaltare electorală | Primar (80) | 30s | Scatters banknotes, gold and contracts around you |
+| 2 | Un telefon la judecătoare | Baron de județ (200) | 60s | Anti-bribe heat drops to 0; untouchable for 6s (no body collisions, no new heat) |
+| 3 | Ordonanță de urgență | Senator (400) | 70s | A 15-second special contract just ahead of you, plus 6 bribe envelopes that don't raise heat |
+| 4 | Licitație cu dedicație | Ministru (700) | 55s | For 4s every contract, briefcase, gold coin and envelope within 900 px flies to you |
+
+Definitions live in `src/game/powers.ts`; effects in `World.activatePower` (`src/game/world.ts`).
+
 ## Difficulty
 
 Pick it in the menu: **Intern** (easy), **Candidate** (normal, default) or **Party Baron** (hard). Difficulty only changes the AI rivals; your own growth is never touched. All knobs live in `src/game/difficulty.ts`:
