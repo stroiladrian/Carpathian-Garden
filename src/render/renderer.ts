@@ -21,6 +21,7 @@ export class Renderer {
   w = 0;
   h = 0;
   dpr = 1;
+  maxDpr = 2;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -31,7 +32,7 @@ export class Renderer {
   }
 
   resize(): void {
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.dpr = Math.min(window.devicePixelRatio || 1, this.maxDpr);
     this.w = window.innerWidth;
     this.h = window.innerHeight;
     this.canvas.width = Math.round(this.w * this.dpr);
@@ -42,7 +43,8 @@ export class Renderer {
 
   /** Zoom that keeps a sensible amount of arena on screen, pulling back as you grow. */
   zoomFor(radius: number): number {
-    const base = clamp(Math.sqrt(this.w * this.h) / 1050, 0.5, 1.25);
+    // phones: guarantee ~780 world px across the short side so threats aren't off-screen
+    const base = clamp(Math.min(Math.sqrt(this.w * this.h) / 1050, Math.min(this.w, this.h) / 780), 0.42, 1.25);
     return base / (1 + (radius - 11) * 0.022);
   }
 

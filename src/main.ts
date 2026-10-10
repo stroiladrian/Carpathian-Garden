@@ -1,6 +1,11 @@
 import './style.css';
 import { App } from './app';
 
+// Touch devices get the thumb-friendly layout and controls.
+if (window.matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 && !window.matchMedia('(pointer: fine)').matches) {
+  document.documentElement.classList.add('touch');
+}
+
 function boot(): void {
   const app = new App();
   (window as unknown as { __cg: App }).__cg = app;

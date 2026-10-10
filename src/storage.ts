@@ -5,10 +5,19 @@ export interface SaveData {
   character: ArchetypeId;
   muted: boolean;
   best: number;
+  touchSteer: 'joystick' | 'follow';
+  touchHintSeen: boolean;
 }
 
 const KEY = 'carpathian-garden:v1';
-const DEFAULTS: SaveData = { nickname: '', character: 'firebrand', muted: false, best: 0 };
+const DEFAULTS: SaveData = {
+  nickname: '',
+  character: 'firebrand',
+  muted: false,
+  best: 0,
+  touchSteer: 'joystick',
+  touchHintSeen: false,
+};
 
 export function loadSave(): SaveData {
   try {

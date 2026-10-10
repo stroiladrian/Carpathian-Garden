@@ -39,6 +39,12 @@ export class App {
   private deathSpot = { x: 0, y: 0 };
   private wasBoosting = false;
   private realTime = 0;
+  private readonly isTouch = document.documentElement.classList.contains('touch');
+  private hintHideAt = 0;
+  // adaptive quality
+  private perfWindow = 0;
+  private perfFrames = 0;
+  private slowStreak = 0;
 
   constructor() {
     const canvas = $('game') as HTMLCanvasElement;
@@ -60,9 +66,21 @@ export class App {
     this.menu.setBest(this.save.best);
     this.menu.setMuted(this.save.muted);
     this.hud.setMuted(this.save.muted);
+    this.input.touchSteer = this.save.touchSteer;
+    this.input.onTouchSteer = () => {
+      if (!$('touch-hint').hidden) this.hintHideAt = Math.min(this.hintHideAt, this.realTime + 1.2);
+    };
+    if (this.isTouch) {
+      // phones: start a notch lower on resolution and particles
+      this.renderer.maxDpr = 1.75;
+      this.renderer.resize();
+    }
 
     this.bindUi();
-    window.addEventListener('resize', () => this.renderer.resize());
+    const onResize = () => this.renderer.resize();
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', () => setTimeout(onResize, 250));
+    window.visualViewport?.addEventListener('resize', onResize);
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) this.pause();
     });
@@ -101,6 +119,34 @@ export class App {
       e.preventDefault();
       this.input.queueAbility();
     });
+    $('leaderboard').addEventListener('click', () => this.hud.toggleLeaderboard());
+    $('play-sticky').addEventListener('click', () => this.startGame());
+
+    // touch steering mode
+    const setSteer = (m: 'joystick' | 'follow') => {
+      this.input.touchSteer = m;
+      this.save.touchSteer = m;
+      writeSave({ touchSteer: m });
+      $('steer-joystick').setAttribute('aria-checked', String(m === 'joystick'));
+      $('steer-follow').setAttribute('aria-checked', String(m === 'follow'));
+    };
+    $('steer-joystick').addEventListener('click', () => setSteer('joystick'));
+    $('steer-follow').addEventListener('click', () => setSteer('follow'));
+    setSteer(this.save.touchSteer);
+
+    // fullscreen (Android / desktop; iOS Safari only via Add to Home Screen)
+    const fs = $('menu-fullscreen');
+    const root = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => Promise<void> };
+    if (this.isTouch && (root.requestFullscreen || root.webkitRequestFullscreen) && !isStandalone()) {
+      fs.hidden = false;
+      fs.addEventListener('click', () => {
+        const req = root.requestFullscreen ? root.requestFullscreen() : root.webkitRequestFullscreen?.();
+        void Promise.resolve(req)
+          .then(() => (screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> })?.lock?.('any'))
+          .catch(() => undefined);
+      });
+    }
+    if (isStandalone()) $('pwa-tip').hidden = true;
 
     this.input.onKey = (code) => {
       if (code === 'KeyM') this.toggleMute();
@@ -122,6 +168,7 @@ export class App {
     const name = this.menu.nickname || 'Domnul Candidat';
     writeSave({ nickname: this.menu.nickname, character: arch.id });
     this.session = new Session({ aiCount: AI_COUNT, player: { name, arch } });
+    if (this.isTouch) this.session.world.effectsScale = 0.75;
     const p = this.session.player!;
     this.cam = { x: p.head.x, y: p.head.y, zoom: this.renderer.zoomFor(p.radius) };
     this.renderer.terrain.warm(p.head.x, p.head.y, 1100);
@@ -129,6 +176,7 @@ export class App {
     this.runTime = 0;
     this.bestRank = 99;
     this.input.reset();
+    this.input.setHeading(p.angle);
     this.hud.setArchetype(arch);
     this.hud.clearToasts();
     this.menu.hide();
@@ -136,8 +184,13 @@ export class App {
     $('gameover').hidden = true;
     this.hud.show();
     this.state = 'playing';
-    const touch = window.matchMedia('(pointer: coarse)').matches;
-    this.hud.toast(`${arch.abilityName} is ready — ${touch ? 'tap the portrait button' : 'press E'}!`, 'good');
+    this.hud.toast(`${arch.abilityName} is ready — ${this.isTouch ? 'tap your portrait' : 'press E'}!`, 'good');
+    if (this.isTouch && !this.save.touchHintSeen && this.input.touchSteer === 'joystick') {
+      $('touch-hint').hidden = false;
+      this.hintHideAt = this.realTime + 7;
+      this.save.touchHintSeen = true;
+      writeSave({ touchHintSeen: true });
+    }
   }
 
   toMenu(): void {
@@ -146,6 +199,7 @@ export class App {
     this.demoFocus = null;
     $('pause').hidden = true;
     $('gameover').hidden = true;
+    $('touch-hint').hidden = true;
     this.hud.hide();
     this.menu.setBest(this.save.best);
     this.menu.show();
@@ -208,6 +262,7 @@ export class App {
     try {
       this.update(dt);
       this.draw();
+      this.adaptQuality(dt);
     } catch (err) {
       console.error(err);
     }
@@ -252,6 +307,25 @@ export class App {
       this.hud.update(s.player, rank, s.world.worms.length, s.world.leaderboard());
     }
     if (this.state === 'menu') this.menu.animate(this.realTime);
+    if (!$('touch-hint').hidden && (this.realTime >= this.hintHideAt || this.state !== 'playing')) $('touch-hint').hidden = true;
+    this.hud.drawJoystick(this.state === 'playing' ? this.input.joy : null, this.input.joystickRadius, this.input.boostingByTouch);
+  }
+
+  /** Drops render resolution on devices that can't hold ~45 fps. */
+  private adaptQuality(dt: number): void {
+    if (this.state !== 'playing') return;
+    this.perfWindow += dt;
+    this.perfFrames++;
+    if (this.perfWindow < 2) return;
+    const fps = this.perfFrames / this.perfWindow;
+    this.perfWindow = 0;
+    this.perfFrames = 0;
+    this.slowStreak = fps < 45 ? this.slowStreak + 1 : 0;
+    if (this.slowStreak >= 2 && this.renderer.maxDpr > 1) {
+      this.renderer.maxDpr = Math.max(1, this.renderer.maxDpr - 0.5);
+      this.renderer.resize();
+      this.slowStreak = 0;
+    }
   }
 
   private handleEvents(events: GameEvent[]): void {
@@ -265,8 +339,10 @@ export class App {
         case 'death': {
           if (e.victim === p.id) {
             this.sfx.death();
+            buzz([90, 50, 140]);
           } else if (e.killer === p.id) {
             this.sfx.kill();
+            buzz([25, 30, 25]);
             this.hud.toast(`You eliminated ${e.victimName}!`, 'good');
           } else {
             const d = Math.hypot(e.x - p.head.x, e.y - p.head.y);
@@ -276,7 +352,10 @@ export class App {
           break;
         }
         case 'ability': {
-          if (e.w === p.id) this.sfx.ability(e.ab, 1);
+          if (e.w === p.id) {
+            this.sfx.ability(e.ab, 1);
+            buzz(20);
+          }
           else {
             const d = Math.hypot(e.x - p.head.x, e.y - p.head.y);
             if (d < 700) this.sfx.ability(e.ab, 0.5 * (1 - d / 700));
@@ -286,6 +365,7 @@ export class App {
         case 'stunned':
           if (e.w === p.id) {
             this.sfx.stunned();
+            buzz(70);
             this.hud.toast('Out-shouted! You are stunned.', 'bad');
           }
           break;
@@ -350,4 +430,16 @@ export class App {
   get debug() {
     return { state: this.state, session: this.session, cam: this.cam };
   }
+}
+
+function buzz(pattern: number | number[]): void {
+  try {
+    navigator.vibrate?.(pattern);
+  } catch {
+    /* unsupported (iOS) */
+  }
+}
+
+function isStandalone(): boolean {
+  return window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
 }

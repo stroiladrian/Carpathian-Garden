@@ -32,9 +32,9 @@ Live at **https://stroiladrian.github.io/Carpathian-Garden/**, which redeploys a
 
 | Action | Desktop | Touch |
 | --- | --- | --- |
-| Steer | Mouse, or `W` `A` `S` `D` / arrow keys | Drag on the arena |
-| Boost (burns mass) | Hold left mouse, `Space` or `Shift` | Hold **BOOST** |
-| Special ability | `E`, `Q` or right-click | Tap the portrait button |
+| Steer | Mouse, or `W` `A` `S` `D` / arrow keys | Thumb joystick: touch anywhere on the left 60% of the screen and drag (or switch to *Follow finger* in the menu) |
+| Boost (burns mass) | Hold left mouse, `Space` or `Shift` | Hold a second finger anywhere on the right, or hold **BOOST** |
+| Special ability | `E`, `Q` or right-click | Tap your portrait button |
 | Pause | `P` / `Esc` / ⏸ button | ⏸ button |
 | Mute | `M` / 🔊 button | 🔊 button |
 
@@ -63,7 +63,14 @@ The capital spawns noticeably more contracts and briefcases.
 | **Baronul de Partid**, the Party Baron (red/navy) | +50% from contracts and briefcases | **Fast-Track Procedure** (14s): 4s of free super-speed |
 | **Reformistul**, the Earnest Reformer (blue) | Boost costs 40% less; pledges ×3 | **Transparency Shield** (18s): pass through bodies for 3.5s |
 
-Nickname, character, sound setting and best score are saved in `localStorage`.
+Nickname, character, sound setting, touch steering mode and best score are saved in `localStorage`.
+
+### On phones
+
+- Thumb-zone HUD: stats, minimap and leaderboard on top (tap the leaderboard to expand it), with BOOST and ability buttons under your right thumb.
+- First run shows a short touch tutorial. Kills, deaths, stuns and abilities trigger haptics on Android.
+- **Add to Home Screen** (Safari Share menu / Chrome menu) to play fullscreen like an app. On Android the menu also has a Fullscreen button.
+- Rendering resolution drops automatically on devices that can't hold ~45 fps.
 
 ## Architecture
 

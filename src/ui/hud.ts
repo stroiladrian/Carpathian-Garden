@@ -22,6 +22,31 @@ export class Hud {
   private abilityIcon = $('ability-icon') as HTMLCanvasElement;
   private toasts = $('toasts');
   private lastLb = '';
+  private lbBox = $('leaderboard');
+  private joyEl = $('joystick');
+  private joyKnob = this.joyEl.querySelector('.joy-knob') as HTMLElement;
+  private joyShown = false;
+
+  constructor() {
+    if (document.documentElement.classList.contains('touch')) this.lbBox.classList.add('compact');
+  }
+
+  toggleLeaderboard(): void {
+    this.lbBox.classList.toggle('compact');
+  }
+
+  /** Positions the floating thumb joystick (null hides it). */
+  drawJoystick(j: { active: boolean; ox: number; oy: number; kx: number; ky: number } | null, radius: number, boosting: boolean): void {
+    const show = !!j && j.active;
+    if (show !== this.joyShown) {
+      this.joyEl.classList.toggle('on', show);
+      this.joyShown = show;
+    }
+    this.boostBtn.classList.toggle('touching', boosting);
+    if (!show || !j) return;
+    this.joyEl.style.transform = `translate(${j.ox - radius}px, ${j.oy - radius}px)`;
+    this.joyKnob.style.transform = `translate(${j.kx - j.ox}px, ${j.ky - j.oy}px)`;
+  }
 
   setArchetype(a: Archetype): void {
     this.abilityName.textContent = a.abilityName;

@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#0c1a2e" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Carpathian" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
     <title>Carpathian Garden</title>
     <meta name="description" content="Grab power. Grow huge. A satirical growth-and-survival arcade game in a cartoon Romania." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -31,7 +37,17 @@
           </div>
           <div class="meta-row">
             <span class="best">Best score <b id="best">0</b></span>
-            <button id="menu-sound" class="chip" type="button"></button>
+            <div class="chip-row">
+              <button id="menu-fullscreen" class="chip touch-only" type="button" hidden>⛶ Fullscreen</button>
+              <button id="menu-sound" class="chip" type="button"></button>
+            </div>
+          </div>
+          <div class="steer-row touch-only">
+            <span>Touch steering</span>
+            <div class="seg" role="radiogroup" aria-label="Touch steering">
+              <button type="button" id="steer-joystick" role="radio">Thumb joystick</button>
+              <button type="button" id="steer-follow" role="radio">Follow finger</button>
+            </div>
           </div>
         </section>
 
@@ -49,7 +65,11 @@
             <li>Don’t leave the country — the tricolour border is fatal. <kbd>P</kbd>/<kbd>Esc</kbd> pauses, <kbd>M</kbd> mutes.</li>
           </ul>
         </details>
+        <p class="pwa-tip touch-only" id="pwa-tip">Tip: add this page to your Home Screen to play fullscreen like an app.</p>
         <p class="disclaimer">Fictional political parody. All characters are invented archetypes; rivals are computer-controlled AI, not real players.</p>
+      </div>
+      <div class="sticky-play touch-only">
+        <button id="play-sticky" class="btn btn-gold" type="button">PLAY</button>
       </div>
     </div>
 
@@ -68,7 +88,7 @@
         </button>
         <button id="btn-sound" class="icon-btn" title="Sound (M)" aria-label="Toggle sound"></button>
       </div>
-      <div class="leaderboard panel-glass">
+      <div class="leaderboard panel-glass" id="leaderboard" role="button" tabindex="0" aria-label="Leaderboard (tap to expand)">
         <h3>Leaderboard</h3>
         <ol id="lb"></ol>
       </div>
@@ -89,6 +109,11 @@
         </button>
       </div>
       <div id="toasts" aria-live="polite"></div>
+      <div id="joystick" aria-hidden="true"><div class="joy-base"></div><div class="joy-knob"></div></div>
+      <div id="touch-hint" hidden>
+        <div class="th-zone th-left"><div class="th-icon joy"><i></i></div><b>Drag here to steer</b><span>a joystick appears under your thumb</span></div>
+        <div class="th-zone th-right"><div class="th-icon hold"><i></i></div><b>Hold here to boost</b><span>tap the portrait for your ability</span></div>
+      </div>
     </div>
 
     <!-- ───────────── Pause ───────────── -->
