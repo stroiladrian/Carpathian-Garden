@@ -84,7 +84,7 @@ export class MenuMusic {
     const now = this.ctx.currentTime;
     this.out.gain.cancelScheduledValues(now);
     this.out.gain.setValueAtTime(this.out.gain.value, now);
-    this.out.gain.linearRampToValueAtTime(0.5, now + 0.8);
+    this.out.gain.linearRampToValueAtTime(0.7, now + 0.8);
     this.nextTime = now + 0.08;
     this.phase = 'intro';
     this.bar = 0;

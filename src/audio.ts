@@ -2,6 +2,8 @@ import type { ArchetypeId } from './game/characters';
 import type { FoodKind } from './game/food';
 import { MenuMusic } from './music';
 
+const MASTER = 0.85;
+
 /** Tiny WebAudio synth — every sound is generated, no audio files needed. */
 export class Sfx {
   private ctx: AudioContext | null = null;
@@ -28,18 +30,32 @@ export class Sfx {
    * app switch, so this handles all three.
    */
   unlock(): void {
+    const nav = navigator as Navigator & { audioSession?: { type: string } };
+    const isTouch = document.documentElement.classList.contains('touch');
+    // iPhone/iPad: play through the ring/silent switch like a game/video would (Safari 17+).
+    // Isolated so a browser that exposes but rejects this (e.g. desktop Safari) can't block audio.
+    if (isTouch && nav.audioSession) {
+      try {
+        if (nav.audioSession.type !== 'playback') nav.audioSession.type = 'playback';
+      } catch {
+        /* not supported here */
+      }
+    }
     try {
-      // play through the silent switch like a game/video would (Safari 17+)
-      const nav = navigator as Navigator & { audioSession?: { type: string } };
-      if (nav.audioSession && nav.audioSession.type !== 'playback') nav.audioSession.type = 'playback';
-
       if (!this.ctx) {
         const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
         if (!AC) return;
         this.ctx = new AC();
         this.master = this.ctx.createGain();
-        this.master.gain.value = this.muted ? 0 : 0.5;
-        this.master.connect(this.ctx.destination);
+        this.master.gain.value = this.muted ? 0 : MASTER;
+        // gentle limiter so everything can be louder without clipping on laptop/phone speakers
+        const comp = this.ctx.createDynamicsCompressor();
+        comp.threshold.value = -16;
+        comp.knee.value = 10;
+        comp.ratio.value = 4;
+        comp.attack.value = 0.004;
+        comp.release.value = 0.2;
+        this.master.connect(comp).connect(this.ctx.destination);
         const len = this.ctx.sampleRate * 0.5;
         this.noiseBuf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
         const d = this.noiseBuf.getChannelData(0);
@@ -57,7 +73,7 @@ export class Sfx {
         src.start(0);
         // older iOS without audioSession: a looping silent <audio> switches the
         // page to "media playback", so the ring/silent switch no longer mutes it
-        if (!nav.audioSession) {
+        if (isTouch && !nav.audioSession) {
           if (!this.silentEl) {
             this.silentEl = new Audio(silentWavUrl());
             this.silentEl.loop = true;
@@ -110,7 +126,7 @@ export class Sfx {
   setMuted(m: boolean): void {
     this.muted = m;
     this.syncMusic();
-    if (this.master && this.ctx) this.master.gain.setTargetAtTime(m ? 0 : 0.5, this.ctx.currentTime, 0.02);
+    if (this.master && this.ctx) this.master.gain.setTargetAtTime(m ? 0 : MASTER, this.ctx.currentTime, 0.02);
   }
 
   private ready(): AudioContext | null {
