@@ -24,6 +24,10 @@ Other scripts:
 
 The game has no backend, no paid services and no runtime image URLs. All art is drawn on Canvas and all sounds are synthesised with WebAudio. The display fonts come from Google Fonts, and the game falls back to system fonts when offline.
 
+## Play online
+
+Live at **https://stroiladrian.github.io/Carpathian-Garden/**, which redeploys automatically on every push to `main` via GitHub Actions (`.github/workflows/deploy.yml`).
+
 ## How to play
 
 | Action | Desktop | Touch |
