@@ -89,8 +89,11 @@ export class App {
     });
     window.addEventListener('blur', () => this.pause());
     // first gesture anywhere unlocks audio
-    window.addEventListener('pointerdown', () => this.sfx.unlock(), { once: false });
-    window.addEventListener('keydown', () => this.sfx.unlock(), { once: false });
+    // (iOS only treats touchend / click / keydown as gestures that may start audio)
+    const unlock = () => this.sfx.unlock();
+    for (const ev of ['touchend', 'click', 'keydown', 'pointerup']) window.addEventListener(ev, unlock, { capture: true, passive: true });
+    document.addEventListener('visibilitychange', () => (document.hidden ? this.sfx.sleep() : this.sfx.wake()));
+    window.addEventListener('pageshow', () => this.sfx.wake());
 
     this.renderer.terrain.warm(0, 0, 1200);
     requestAnimationFrame((t) => {

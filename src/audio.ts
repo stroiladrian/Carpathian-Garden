@@ -14,9 +14,21 @@ export class Sfx {
     this.muted = muted;
   }
 
-  /** Must be called from a user gesture (browser autoplay rules). */
+  private silentEl: HTMLAudioElement | null = null;
+  private unlocked = false;
+
+  /**
+   * Must be called from a user gesture (browser autoplay rules).
+   * iOS only counts touchend / click / keydown as gestures, mutes Web Audio when the
+   * ring/silent switch is on, and can leave the context "interrupted" after a call or
+   * app switch, so this handles all three.
+   */
   unlock(): void {
     try {
+      // play through the silent switch like a game/video would (Safari 17+)
+      const nav = navigator as Navigator & { audioSession?: { type: string } };
+      if (nav.audioSession && nav.audioSession.type !== 'playback') nav.audioSession.type = 'playback';
+
       if (!this.ctx) {
         const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
         if (!AC) return;
@@ -29,10 +41,43 @@ export class Sfx {
         const d = this.noiseBuf.getChannelData(0);
         for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
       }
-      if (this.ctx.state === 'suspended') void this.ctx.resume();
+      const ctx = this.ctx;
+      if (ctx.state !== 'running') void ctx.resume().catch(() => undefined);
+
+      if (!this.unlocked) {
+        // iOS: a sound must actually start inside the gesture to unlock output
+        const b = ctx.createBuffer(1, 1, 22050);
+        const src = ctx.createBufferSource();
+        src.buffer = b;
+        src.connect(ctx.destination);
+        src.start(0);
+        // older iOS without audioSession: a looping silent <audio> switches the
+        // page to "media playback", so the ring/silent switch no longer mutes it
+        if (!nav.audioSession) {
+          if (!this.silentEl) {
+            this.silentEl = new Audio(silentWavUrl());
+            this.silentEl.loop = true;
+            this.silentEl.setAttribute('playsinline', '');
+            this.silentEl.volume = 0.01;
+          }
+          void this.silentEl.play().catch(() => undefined);
+        }
+        this.unlocked = true;
+      }
     } catch {
-      this.ctx = null;
+      /* audio unavailable — game continues silently */
     }
+  }
+
+  /** Call when the page becomes visible again (iOS suspends audio in the background). */
+  wake(): void {
+    if (this.ctx && this.ctx.state !== 'running') void this.ctx.resume().catch(() => undefined);
+    if (this.silentEl && this.silentEl.paused && this.unlocked) void this.silentEl.play().catch(() => undefined);
+  }
+
+  /** Pause background audio work while hidden. */
+  sleep(): void {
+    this.silentEl?.pause();
   }
 
   setMuted(m: boolean): void {
@@ -41,7 +86,11 @@ export class Sfx {
   }
 
   private ready(): AudioContext | null {
-    if (this.muted || !this.ctx || !this.master || this.ctx.state !== 'running') return null;
+    if (this.muted || !this.ctx || !this.master) return null;
+    if (this.ctx.state !== 'running') {
+      void this.ctx.resume().catch(() => undefined); // e.g. 'interrupted' after a phone call
+      return null;
+    }
     return this.ctx;
   }
 
@@ -174,4 +223,33 @@ export class Sfx {
   click(): void {
     this.tone(900, 0.05, 'triangle', 0.08);
   }
+}
+
+let silentUrl: string | null = null;
+/** 0.25 s of silent 8 kHz mono PCM as a blob URL (no audio files shipped). */
+function silentWavUrl(): string {
+  if (silentUrl) return silentUrl;
+  const rate = 8000;
+  const n = rate / 4;
+  const buf = new ArrayBuffer(44 + n);
+  const v = new DataView(buf);
+  const str = (o: number, t: string) => {
+    for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i));
+  };
+  str(0, 'RIFF');
+  v.setUint32(4, 36 + n, true);
+  str(8, 'WAVE');
+  str(12, 'fmt ');
+  v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true);
+  v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true);
+  v.setUint32(28, rate, true);
+  v.setUint16(32, 1, true);
+  v.setUint16(34, 8, true);
+  str(36, 'data');
+  v.setUint32(40, n, true);
+  for (let i = 0; i < n; i++) v.setUint8(44 + i, 128);
+  silentUrl = URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+  return silentUrl;
 }
