@@ -1,0 +1,98 @@
+import type { Archetype } from '../game/characters';
+import { MIN_BOOST_MASS } from '../game/config';
+import type { Worm } from '../game/worm';
+import { renderPortrait } from '../render/heads';
+import { $, el, formatLei, soundIcon } from './dom';
+
+export class Hud {
+  readonly root = $('hud');
+  private score = $('h-score');
+  private lei = $('h-lei');
+  private rank = $('h-rank');
+  private len = $('h-len');
+  private kills = $('h-kills');
+  private lb = $('lb') as HTMLOListElement;
+  private soundBtn = $('btn-sound');
+  readonly boostBtn = $('btn-boost');
+  private boostMeter = $('boost-meter');
+  readonly abilityBtn = $('btn-ability');
+  private abilityCd = $('ability-cd');
+  private abilityCdText = $('ability-cd-text');
+  private abilityName = $('ability-name');
+  private abilityIcon = $('ability-icon') as HTMLCanvasElement;
+  private toasts = $('toasts');
+  private lastLb = '';
+
+  setArchetype(a: Archetype): void {
+    this.abilityName.textContent = a.abilityName;
+    renderPortrait(this.abilityIcon, a, 'power', 0);
+  }
+
+  setMuted(m: boolean): void {
+    this.soundBtn.innerHTML = soundIcon(m);
+  }
+
+  show(): void {
+    this.root.hidden = false;
+  }
+  hide(): void {
+    this.root.hidden = true;
+  }
+
+  update(p: Worm, rank: number, total: number, board: Worm[]): void {
+    this.score.textContent = Math.floor(p.mass).toLocaleString('en-US');
+    this.lei.textContent = formatLei(p.money);
+    this.rank.textContent = `#${rank}/${total}`;
+    this.len.textContent = `${p.segs.length}`;
+    this.kills.textContent = `${p.kills}`;
+
+    // boost
+    const canBoost = p.mass > MIN_BOOST_MASS;
+    this.boostBtn.classList.toggle('on', p.boosting);
+    this.boostBtn.classList.toggle('low', !canBoost);
+    this.boostMeter.style.width = `${Math.min(100, ((p.mass - MIN_BOOST_MASS) / 120) * 100)}%`;
+
+    // ability
+    const a = p.arch;
+    const active = p.abilityT > 0;
+    const ready = p.abilityCd <= 0;
+    this.abilityBtn.classList.toggle('ready', ready && !active);
+    this.abilityBtn.classList.toggle('active', active);
+    this.abilityCd.style.setProperty('--p', ready ? '0' : String(p.abilityCd / a.cooldown));
+    this.abilityCdText.textContent = ready ? '' : String(Math.ceil(p.abilityCd));
+
+    // leaderboard (only touch the DOM when it changes)
+    const top = board.slice(0, 10);
+    const meIdx = board.indexOf(p);
+    const rows = top.map((w, i) => ({ n: i + 1, w }));
+    const showMe = meIdx >= 10;
+    const key = rows.map((r) => `${r.w.id}:${Math.floor(r.w.mass)}`).join('|') + (showMe ? `|me${meIdx}:${Math.floor(p.mass)}` : '');
+    if (key === this.lastLb) return;
+    this.lastLb = key;
+    this.lb.replaceChildren();
+    const add = (n: number, w: Worm) => {
+      const li = el('li', w === p ? 'me' : undefined);
+      const dot = el('span', 'dot');
+      dot.style.background = w.colors.a;
+      li.append(el('span', 'n', `${n}`), dot, el('span', 'nm', w.name), el('span', 'sc', Math.floor(w.mass).toLocaleString('en-US')));
+      this.lb.append(li);
+    };
+    for (const r of rows) add(r.n, r.w);
+    if (showMe) {
+      this.lb.append(el('li', 'gap', '⋯'));
+      add(meIdx + 1, p);
+    }
+  }
+
+  toast(text: string, kind: 'good' | 'bad' | '' = ''): void {
+    const t = el('div', `toast ${kind}`, text);
+    this.toasts.append(t);
+    while (this.toasts.children.length > 3) this.toasts.firstElementChild?.remove();
+    window.setTimeout(() => t.remove(), 2900);
+  }
+
+  clearToasts(): void {
+    this.toasts.replaceChildren();
+    this.lastLb = '';
+  }
+}
